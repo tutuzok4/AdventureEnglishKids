@@ -4,15 +4,15 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Adventure English - Jogo de Conversação</title>
-  <link href="[https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap](https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap)" rel="stylesheet">
-  <script src="[https://cdn.tailwindcss.com](https://cdn.tailwindcss.com)"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root{
       --bg1:#a5b4fc; --bg2:#fbcfe8; --bg3:#fef3c7;
     }
     html,body{ height:100%; }
     body{ font-family:'Nunito',system-ui, -apple-system; background: linear-gradient(180deg,#f0f9ff 0%, #fff 100%); color:#0f172a; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
-    #startScreen{ position:fixed; inset:0; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)); display:flex; align-items:center; justify-content:center; z-index:60; flex-direction:column; overflow:hidden; }
+    #startScreen{ position:fixed; inset:0; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)); display:flex; align-items-center; justify-content:center; z-index:60; flex-direction:column; overflow:hidden; }
     .balloon{ position:absolute; bottom:-140px; width:64px; height:86px; border-radius:50% 50% 45% 55%; box-shadow:0 6px 18px rgba(0,0,0,0.08); transform-origin:center bottom; animation:float 10s linear infinite; opacity:.95; }
     @keyframes float{ 0%{ transform:translateY(0) rotate(0deg); } 100%{ transform:translateY(-130vh) rotate(16deg); opacity:0; } }
     .card{ background: rgba(255,255,255,0.92); backdrop-filter: blur(6px); }
@@ -264,7 +264,7 @@ const scenes = [
 ];
 const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "nova", shop: "shimmer", playground: "shimmer" };
 const categories = [
-    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome']]},
+    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome'], ['how are you?', 'como você está?'], ['my name is...', 'meu nome é...'], ['see you later', 'até mais tarde'], ['yes', 'sim'], ['no', 'não'], ['good morning', 'bom dia'], ['good afternoon', 'boa tarde'], ['good night', 'boa noite'], ['excuse me', 'com licença'], ["you're welcome", 'de nada'], ['nice to meet you', 'prazer em conhecer'], ['friend', 'amigo(a)'], ['boy', 'menino'], ['girl', 'menina'], ['what is this?', 'o que é isto?'], ['I understand', 'eu entendo'], ["I don't know", 'eu não sei'], ['can you help me?', 'pode me ajudar?'], ['of course', 'claro'], ['maybe', 'talvez'], ['welcome', 'bem-vindo(a)'], ['have a good day', 'tenha um bom dia'], ['take care', 'se cuida'], ['me too', 'eu também'], ['why', 'por quê'], ['because', 'porque'], ['now', 'agora'], ['later', 'mais tarde'], ['today', 'hoje'], ['tomorrow', 'amanhã']] },
     { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco.','Diga sua idade.'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']]},
     { id:'colors', icon:'🎨', name:'Cores', englishName: 'Colors', missions:['Fale sua cor favorita.'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja']]},
     { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']]},
