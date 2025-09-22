@@ -44,8 +44,8 @@
     .game-option.correct { box-shadow: 0 0 0 3px #16a34a; background-color: #dcfce7; }
     .game-option.incorrect { box-shadow: 0 0 0 3px #dc2626; background-color: #fee2e2; animation: shake 0.5s; }
     @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
-    .memory-card { transform-style: preserve-3d; transition: transform 0.5s; }
-    .memory-card .front, .memory-card .back { backface-visibility: hidden; }
+    .memory-card { transform-style: preserve-3d; transition: transform 0.5s; cursor: pointer; }
+    .memory-card .front, .memory-card .back { backface-visibility: hidden; position: absolute; top:0; left:0; width:100%; height:100%; display:flex; justify-content:center; align-items:center; }
     .memory-card .back { transform: rotateY(180deg); }
     .memory-card.flipped { transform: rotateY(180deg); }
   </style>
@@ -173,8 +173,8 @@
                 <!-- Jogo: Ligar Palavra-Emoji -->
                 <div id="wordEmojiGame" class="game-area hidden">
                     <div class="text-center mb-4">
-                        <p id="wordEmojiGameInstruction" class="font-bold">Ligue a palavra em inglês com o emoji correto!</p>
-                        <p id="wordEmojiGameFeedback" class="text-sm h-5"></p>
+                        <p class="font-bold">Ligue a palavra em inglês com o emoji correto!</p>
+                        <p id="gameFeedback" class="text-sm h-5"></p>
                     </div>
                     <div class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
                         <div id="gameWordsContainer" class="grid grid-cols-1 gap-3"></div>
@@ -185,7 +185,7 @@
                 <div id="memoryGame" class="game-area hidden">
                      <div class="text-center mb-4">
                         <p class="font-bold">Encontre os pares de palavras e emojis!</p>
-                        <p id="memoryGameFeedback" class="text-sm h-5"></p>
+                        <p id="gameFeedback" class="text-sm h-5"></p>
                     </div>
                     <div id="memoryGameBoard" class="grid grid-cols-4 gap-4 max-w-md mx-auto"></div>
                 </div>
@@ -193,7 +193,7 @@
                 <div id="scrambleGame" class="game-area hidden">
                     <div class="text-center mb-4">
                         <p class="font-bold">Coloque as letras na ordem correta para formar a palavra!</p>
-                        <p id="scrambleGameFeedback" class="text-sm h-5"></p>
+                        <p id="gameFeedback" class="text-sm h-5"></p>
                     </div>
                     <div class="flex flex-col items-center justify-center">
                         <div id="scrambleEmoji" class="text-7xl mb-4"></div>
@@ -206,7 +206,7 @@
                 <div id="missingGame" class="game-area hidden">
                      <div class="text-center mb-4">
                         <p id="missingGameInstruction" class="font-bold">Memorize os emojis... e descubra qual está em falta!</p>
-                        <p id="missingGameFeedback" class="text-sm h-5"></p>
+                        <p id="gameFeedback" class="text-sm h-5"></p>
                     </div>
                     <div id="missingEmojisContainer" class="flex justify-center items-center gap-4 h-48"></div>
                 </div>
@@ -214,7 +214,7 @@
                 <div id="oddOneOutGame" class="game-area hidden">
                      <div class="text-center mb-4">
                         <p class="font-bold">Qual destes não pertence ao grupo? Escreva o nome em inglês!</p>
-                        <p id="oddOneOutFeedback" class="text-sm h-5"></p>
+                        <p id="gameFeedback" class="text-sm h-5"></p>
                     </div>
                     <div class="flex flex-col items-center justify-center">
                         <div id="oddOneOutEmojis" class="flex gap-4 text-5xl mb-6"></div>
@@ -282,6 +282,9 @@ const categories = [
     { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']]},
     { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Diga o que gosta de comer.'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza']]},
     { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Fale sobre sua mãe ou pai.'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['friend', 'amigo(a)']]},
+    { id:'clothes', icon:'👕', name:'Roupas', englishName: 'Clothes', missions:['Descreva sua roupa.'], vocab:[['shirt', 'camisa'], ['pants', 'calças'], ['shoes', 'sapatos'], ['dress', 'vestido'], ['hat', 'chapéu'], ['jacket', 'jaqueta']]},
+    { id:'body', icon:'🧠', name:'Corpo', englishName: 'Body', missions:['Aponte para sua cabeça.'], vocab:[['head', 'cabeça'], ['hand', 'mão'], ['leg', 'perna'], ['eyes', 'olhos'], ['nose', 'nariz'], ['mouth', 'boca']]},
+    { id:'weather', icon:'⛅', name:'Tempo', englishName: 'Weather', missions:['Descreva o dia de hoje.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento']]},
 ];
 const gameVocab = {
     'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵']],
@@ -289,10 +292,10 @@ const gameVocab = {
     'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣']],
 };
 const oddOneOutSets = [
-    { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one: '🐶', answer: 'dog' },
-    { emojis: ['🚗', '🚲', '🚀', '🥐'], odd_one: '🥐', answer: 'croissant' },
-    { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one: '👑', answer: 'crown' },
-    { emojis: ['👕', '👖', '帽子', '👗'], odd_one: '帽子', answer: 'hat' }, // Note: Chinese char for hat
+    { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one_emoji: '🐶', answer: 'dog' },
+    { emojis: ['🚗', '🚲', '🚀', '🥐'], odd_one_emoji: '🥐', answer: 'croissant' },
+    { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one_emoji: '👑', answer: 'crown' },
+    { emojis: ['👕', '👖', '☀️', '👗'], odd_one_emoji: '☀️', answer: 'sun' },
 ];
 
 
@@ -558,7 +561,7 @@ function checkWordEmojiMatch() {
     if (!selectedWord || !selectedEmoji) return;
     const word = selectedWord.dataset.word, emoji = selectedEmoji.dataset.emoji;
     const category = Object.values(gameVocab).flat(), correctPair = category.find(p => p[0] === word);
-    const feedback = $('#wordEmojiGameFeedback');
+    const feedback = $('#gameFeedback');
     if (correctPair && correctPair[1] === emoji) {
         feedback.textContent = 'Correto! 🎉'; feedback.className = 'text-sm h-5 text-emerald-600 font-bold';
         selectedWord.classList.add('correct'); selectedEmoji.classList.add('correct');
@@ -587,11 +590,11 @@ function startMemoryGame() {
     shuffle(cards);
     cards.forEach(cardData => {
         const cardEl = document.createElement('div');
-        cardEl.className = 'memory-card w-24 h-24 cursor-pointer';
+        cardEl.className = 'memory-card w-24 h-24 relative';
         cardEl.dataset.pairId = cardData.pairId;
         cardEl.innerHTML = `
-            <div class="front w-full h-full bg-violet-500 rounded-lg flex items-center justify-center"></div>
-            <div class="back w-full h-full bg-white rounded-lg flex items-center justify-center text-2xl font-bold border-2">${cardData.value}</div>`;
+            <div class="front w-full h-full bg-violet-500 rounded-lg"></div>
+            <div class="back w-full h-full bg-white rounded-lg text-2xl font-bold border-2">${cardData.value}</div>`;
         cardEl.addEventListener('click', () => {
             if (state.currentGame.lockBoard || cardEl.classList.contains('flipped') || state.currentGame.flippedCards.length >= 2) return;
             cardEl.classList.add('flipped');
@@ -618,9 +621,105 @@ function startMemoryGame() {
         board.appendChild(cardEl);
     });
 }
-function startScrambleGame() { /* Placeholder for future implementation */ }
-function startMissingGame() { /* Placeholder for future implementation */ }
-function startOddOneOutGame() { /* Placeholder for future implementation */ }
+function startScrambleGame() { 
+    const emojiContainer = $('#scrambleEmoji'), answerContainer = $('#scrambleAnswer'), lettersContainer = $('#scrambleLetters');
+    emojiContainer.innerHTML = ''; answerContainer.innerHTML = ''; lettersContainer.innerHTML = ''; $('#gameFeedback').textContent = '';
+    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const [word, emoji] = shuffle(gameVocab[randomCategoryKey])[0];
+    state.currentGame.scrambleAnswer = word;
+    emojiContainer.textContent = emoji;
+    const letters = shuffle(word.split(''));
+    letters.forEach(letter => {
+        const btn = document.createElement('button');
+        btn.className = 'game-option w-10 h-10 bg-white rounded-lg text-2xl font-bold border-2';
+        btn.textContent = letter;
+        btn.onclick = () => {
+            answerContainer.textContent += letter;
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            if(answerContainer.textContent.length === word.length) {
+                if(answerContainer.textContent === word) {
+                    playCorrect();
+                    $('#gameFeedback').textContent = 'Correto!';
+                    $('#gameWinMessage').classList.remove('hidden');
+                } else {
+                    playWrong();
+                    $('#gameFeedback').textContent = 'Incorreto, tente de novo!';
+                }
+            }
+        };
+        lettersContainer.appendChild(btn);
+    });
+    $('#scrambleClearBtn').onclick = () => {
+        answerContainer.textContent = '';
+        $('#gameFeedback').textContent = '';
+        lettersContainer.querySelectorAll('button').forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+        });
+    };
+}
+function startMissingGame() {
+    const container = $('#missingEmojisContainer'), instruction = $('#missingGameInstruction');
+    container.innerHTML = ''; instruction.textContent = 'Memorize os emojis...'; $('#gameFeedback').textContent = '';
+    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const items = shuffle([...gameVocab[randomCategoryKey]]).slice(0, 4);
+    const missingItem = items[0];
+    state.currentGame.missingAnswer = missingItem[0];
+    
+    items.forEach(item => container.innerHTML += `<div class="text-5xl">${item[1]}</div>`);
+
+    setTimeout(() => {
+        container.innerHTML = '<div class="text-2xl font-bold">Qual desapareceu?</div>';
+        setTimeout(() => {
+            container.innerHTML = '';
+            const displayItems = items.filter(item => item[0] !== missingItem[0]);
+            displayItems.forEach(item => container.innerHTML += `<div class="text-5xl opacity-50">${item[1]}</div>`);
+            
+            instruction.textContent = 'Clique no emoji que está em falta!';
+            const options = shuffle([...items]);
+            options.forEach(option => {
+                const btn = document.createElement('button');
+                btn.className = 'game-option p-3 bg-white rounded-xl border-2 text-4xl';
+                btn.textContent = option[1];
+                btn.onclick = () => {
+                    if (option[0] === missingItem[0]) {
+                        playCorrect();
+                        $('#gameFeedback').textContent = 'Correto!';
+                        $('#gameWinMessage').classList.remove('hidden');
+                    } else {
+                        playWrong();
+                        $('#gameFeedback').textContent = 'Tente novamente!';
+                        btn.classList.add('incorrect');
+                        setTimeout(()=>btn.classList.remove('incorrect'), 500);
+                    }
+                };
+                container.appendChild(btn);
+            });
+
+        }, 1500);
+    }, 2500);
+}
+function startOddOneOutGame() {
+    const container = $('#oddOneOutEmojis'), input = $('#oddOneOutInput'), form = $('#oddOneOutForm'), feedback = $('#oddOneOutFeedback');
+    container.innerHTML = ''; input.value = ''; feedback.textContent = '';
+    const currentSet = shuffle([...oddOneOutSets])[0];
+    state.currentGame.oddOneOutAnswer = currentSet.answer;
+    shuffle(currentSet.emojis).forEach(emoji => container.innerHTML += `<div>${emoji}</div>`);
+    form.onsubmit = (e) => {
+        e.preventDefault();
+        if(input.value.trim().toLowerCase() === state.currentGame.oddOneOutAnswer) {
+            playCorrect();
+            feedback.textContent = 'Correto!';
+            $('#gameWinMessage').classList.remove('hidden');
+        } else {
+            playWrong();
+            feedback.textContent = 'Não é isso, tente novamente!';
+            input.classList.add('incorrect');
+            setTimeout(()=>input.classList.remove('incorrect'), 500);
+        }
+    };
+}
 
 
 /* ---------- EVENTOS E INICIALIZAÇÃO ---------- */
