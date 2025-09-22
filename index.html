@@ -39,25 +39,15 @@
     #medalModal.visible #medalCard { animation: medal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
 
     /* Estilos dos Jogos */
-    .game-option.selected {
-        transform: scale(1.08);
-        box-shadow: 0 0 0 3px #6d28d9;
-        background-color: #f5d0fe;
-    }
-    .game-option.correct {
-        box-shadow: 0 0 0 3px #16a34a;
-        background-color: #dcfce7;
-    }
-    .game-option.incorrect {
-        box-shadow: 0 0 0 3px #dc2626;
-        background-color: #fee2e2;
-        animation: shake 0.5s;
-    }
-    @keyframes shake {
-      0%, 100% { transform: translateX(0); }
-      25% { transform: translateX(-5px); }
-      75% { transform: translateX(5px); }
-    }
+    .game-button.active { background-color: #6d28d9; color: white; }
+    .game-option.selected { transform: scale(1.08); box-shadow: 0 0 0 3px #6d28d9; background-color: #f5d0fe; }
+    .game-option.correct { box-shadow: 0 0 0 3px #16a34a; background-color: #dcfce7; }
+    .game-option.incorrect { box-shadow: 0 0 0 3px #dc2626; background-color: #fee2e2; animation: shake 0.5s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+    .memory-card { transform-style: preserve-3d; transition: transform 0.5s; }
+    .memory-card .front, .memory-card .back { backface-visibility: hidden; }
+    .memory-card .back { transform: rotateY(180deg); }
+    .memory-card.flipped { transform: rotateY(180deg); }
   </style>
 </head>
 <body>
@@ -171,23 +161,70 @@
     <div id="gamesView" class="hidden">
         <div class="card rounded-2xl p-6 shadow-lg mt-6">
             <h2 class="text-2xl font-extrabold mb-4">Central de Jogos 🎮</h2>
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                <button class="bg-violet-500 text-white font-bold py-3 rounded-xl">Ligar Palavra-Emoji</button>
-                <button class="bg-slate-200 text-slate-600 font-bold py-3 rounded-xl cursor-not-allowed">Jogo da Memória (em breve)</button>
-                <button class="bg-slate-200 text-slate-600 font-bold py-3 rounded-xl cursor-not-allowed">Caça-Palavras (em breve)</button>
-                <button class="bg-slate-200 text-slate-600 font-bold py-3 rounded-xl cursor-not-allowed">O que Falta? (em breve)</button>
+            <div id="game-nav" class="flex flex-wrap items-center justify-center gap-2 mb-6">
+                <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="wordEmoji">Ligar Palavra-Emoji</button>
+                <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="memory">Jogo da Memória</button>
+                <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="scramble">Letras Baralhadas</button>
+                <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="missing">O que Falta?</button>
+                <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="oddOneOut">O Intruso</button>
             </div>
             
-            <!-- Jogo: Ligar Palavra-Emoji -->
-            <div id="wordEmojiGame">
-                <div class="text-center mb-4">
-                    <p id="gameInstruction" class="font-bold">Ligue a palavra em inglês com o emoji correto!</p>
-                    <p id="gameFeedback" class="text-sm h-5"></p>
+            <div id="gameContainer" class="p-4 bg-slate-100/50 rounded-2xl min-h-[400px]">
+                <!-- Jogo: Ligar Palavra-Emoji -->
+                <div id="wordEmojiGame" class="game-area hidden">
+                    <div class="text-center mb-4">
+                        <p id="wordEmojiGameInstruction" class="font-bold">Ligue a palavra em inglês com o emoji correto!</p>
+                        <p id="wordEmojiGameFeedback" class="text-sm h-5"></p>
+                    </div>
+                    <div class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
+                        <div id="gameWordsContainer" class="grid grid-cols-1 gap-3"></div>
+                        <div id="gameEmojisContainer" class="grid grid-cols-3 gap-3"></div>
+                    </div>
                 </div>
-                <div class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
-                    <div id="gameWordsContainer" class="grid grid-cols-1 gap-3"></div>
-                    <div id="gameEmojisContainer" class="grid grid-cols-3 gap-3"></div>
+                <!-- Jogo da Memória -->
+                <div id="memoryGame" class="game-area hidden">
+                     <div class="text-center mb-4">
+                        <p class="font-bold">Encontre os pares de palavras e emojis!</p>
+                        <p id="memoryGameFeedback" class="text-sm h-5"></p>
+                    </div>
+                    <div id="memoryGameBoard" class="grid grid-cols-4 gap-4 max-w-md mx-auto"></div>
                 </div>
+                <!-- Letras Baralhadas -->
+                <div id="scrambleGame" class="game-area hidden">
+                    <div class="text-center mb-4">
+                        <p class="font-bold">Coloque as letras na ordem correta para formar a palavra!</p>
+                        <p id="scrambleGameFeedback" class="text-sm h-5"></p>
+                    </div>
+                    <div class="flex flex-col items-center justify-center">
+                        <div id="scrambleEmoji" class="text-7xl mb-4"></div>
+                        <div id="scrambleAnswer" class="h-12 w-64 bg-white rounded-lg border-2 border-slate-300 flex items-center justify-center text-2xl font-bold tracking-widest mb-4"></div>
+                        <div id="scrambleLetters" class="flex gap-2 mb-4"></div>
+                        <button id="scrambleClearBtn" class="text-xs text-slate-500 hover:underline">Limpar</button>
+                    </div>
+                </div>
+                <!-- O que Falta? -->
+                <div id="missingGame" class="game-area hidden">
+                     <div class="text-center mb-4">
+                        <p id="missingGameInstruction" class="font-bold">Memorize os emojis... e descubra qual está em falta!</p>
+                        <p id="missingGameFeedback" class="text-sm h-5"></p>
+                    </div>
+                    <div id="missingEmojisContainer" class="flex justify-center items-center gap-4 h-48"></div>
+                </div>
+                <!-- O Intruso -->
+                <div id="oddOneOutGame" class="game-area hidden">
+                     <div class="text-center mb-4">
+                        <p class="font-bold">Qual destes não pertence ao grupo? Escreva o nome em inglês!</p>
+                        <p id="oddOneOutFeedback" class="text-sm h-5"></p>
+                    </div>
+                    <div class="flex flex-col items-center justify-center">
+                        <div id="oddOneOutEmojis" class="flex gap-4 text-5xl mb-6"></div>
+                        <form id="oddOneOutForm" class="flex items-center gap-2">
+                            <input type="text" id="oddOneOutInput" class="px-4 py-2 border-2 rounded-lg" placeholder="Escreva aqui...">
+                            <button type="submit" class="px-4 py-2 bg-violet-500 text-white font-bold rounded-lg">Verificar</button>
+                        </form>
+                    </div>
+                </div>
+                
                 <div id="gameWinMessage" class="hidden text-center mt-6">
                     <p class="text-2xl font-bold text-emerald-600">🎉 Você conseguiu! 🎉</p>
                     <button id="playAgainBtn" class="mt-4 px-6 py-2 bg-emerald-500 text-white font-bold rounded-xl">Jogar Novamente</button>
@@ -225,7 +262,7 @@ const BACKEND_URL = '';
 const state = {
   sceneId: null, categoryId: null, stars: 0, level: 1, showTranslation: false, history: [],
   achievements: {}, userName: null, age: null, voice: null, currentAudio: null, vocabExpanded: {},
-  currentGame: { selectedWord: null, selectedEmoji: null, pairsLeft: 0 }
+  currentGame: { id: null, selectedWord: null, selectedEmoji: null, pairsLeft: 0, flippedCards: [], lockBoard: false }
 };
 
 /* ---------- DADOS (CENAS, CATEGORIAS, VOCABULÁRIO) ---------- */
@@ -239,18 +276,25 @@ const scenes = [
 ];
 const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "nova", shop: "shimmer", playground: "shimmer" };
 const categories = [
-    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”','Despeça-se: “Goodbye! See you!”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome']]},
-    { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco: “One, two, three, four, five!”','Diga sua idade: “I am __ years old.”','Pergunte a idade: “How old are you?”'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']]},
-    { id:'colors', icon:'🎨', name:'Cores', englishName: 'Colors', missions:['Descreva: “My ball is red.”','Pergunte: “What color is it?”'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja']]},
-    { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Diga o que vê: “I see a __.”','Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']]},
-    { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Faça um pedido: “I would like __, please.”','Diga o que gosta: “I like __.”'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza']]},
-    { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Apresente alguém: “This is my __.”','Pergunte: “Who is he/she?”'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['friend', 'amigo(a)']]},
+    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome']]},
+    { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco.','Diga sua idade.'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']]},
+    { id:'colors', icon:'🎨', name:'Cores', englishName: 'Colors', missions:['Fale sua cor favorita.'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja']]},
+    { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']]},
+    { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Diga o que gosta de comer.'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza']]},
+    { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Fale sobre sua mãe ou pai.'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['friend', 'amigo(a)']]},
 ];
 const gameVocab = {
     'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵']],
     'food': [['apple','🍎'], ['banana','🍌'], ['pizza','🍕'], ['milk','🥛'], ['bread','🍞'], ['cake', '🍰']],
     'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣']],
 };
+const oddOneOutSets = [
+    { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one: '🐶', answer: 'dog' },
+    { emojis: ['🚗', '🚲', '🚀', '🥐'], odd_one: '🥐', answer: 'croissant' },
+    { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one: '👑', answer: 'crown' },
+    { emojis: ['👕', '👖', '帽子', '👗'], odd_one: '帽子', answer: 'hat' }, // Note: Chinese char for hat
+];
+
 
 /* ---------- UTILITÁRIOS ---------- */
 const $ = sel => document.querySelector(sel);
@@ -296,32 +340,25 @@ async function ttsSpeak(text, button = null) {
 function addMsg({from='ai', text, translate=true, speak=true}){
   const wrap=document.createElement('div');
   wrap.className=`relative flex ${from==='ai'?'justify-start':'justify-end'}`;
-
   const bubble=document.createElement('div');
   bubble.className=`relative max-w-[82%] px-4 py-3 rounded-2xl shadow card ${from==='ai'?'bubble-ai':'bubble-kid'}`;
   bubble.style.margin='6px 0';
-
-  let englishText = text;
-  let portugueseText = null;
-
+  let englishText = text, portugueseText = null;
   if (from === 'ai' && text.includes('[TRANSLATION]')) {
     const parts = text.split('[TRANSLATION]');
     englishText = parts[0].trim();
     portugueseText = parts[1].trim();
   }
-
   const contentDiv=document.createElement('div');
   contentDiv.className='text-[15px] leading-relaxed';
   contentDiv.textContent = englishText;
   bubble.appendChild(contentDiv);
-
   if (state.showTranslation && from === 'ai' && portugueseText) {
     const t=document.createElement('div');
     t.className='text-[12px] text-slate-600 mt-1';
     t.textContent = `PT: ${portugueseText}`;
     bubble.appendChild(t);
   }
-
   if (from==='ai'){
     const controls=document.createElement('div');
     controls.style.marginTop='8px';
@@ -333,7 +370,6 @@ function addMsg({from='ai', text, translate=true, speak=true}){
     bubble.appendChild(controls);
     if(speak) ttsSpeak(englishText);
   }
-
   wrap.appendChild(bubble);
   chatEl.appendChild(wrap);
   scrollBottom();
@@ -439,22 +475,17 @@ function getAgeGuidance(age){
 }
 function buildSystemPrompt() {
   const scene = scenes.find(s => s.id === state.sceneId);
-  
-  // Special instruction for the playground friend to match the user's age.
   let persona_instruction = scene ? scene.persona : 'You are a friendly helper.';
   if (scene && scene.id === 'playground' && state.age) {
       persona_instruction = `Your name is Lily. You are ${state.age} years old, just like your new friend! Be very playful and energetic. Invite them to play on the swings, slides, and talk about your favorite games.`;
   }
-
   return `You are an AI acting as a character for a roleplay with a ${state.age || 'young'} year-old child named ${state.userName || 'friend'}.
-
 **CHARACTER PERSONA: ${persona_instruction}**
-
 **CORE INSTRUCTIONS:**
 1.  **NEVER BREAK CHARACTER:** You are NOT an AI. You are the character described in your PERSONA. If the child asks your name, age, or personal questions, answer using your character's details. Fully embody the role.
 2.  **GRAMMAR CORRECTION:** Your most important task is to help the child learn. If the child makes a CLEAR grammatical mistake (like "he go" instead of "he goes"), you MUST gently correct it. If the child's sentence is correct, DO NOT rephrase it. Just praise them and continue the conversation naturally.
 3.  **ADAPT TO AGE:** Your language style MUST be adapted for a ${state.age || 'young'} year-old child. ${getAgeGuidance(state.age)}
-4.  **STAY ON TOPIC:** Keep the conversation related to your character's context (e.g., the zoo, the playground).
+4.  **STAY ON TOPIC:** Keep the conversation related to your character's context.
 5.  **KEEP IT SHORT:** Respond in 1-3 short sentences. NEVER switch to Portuguese.
 6.  **TRANSLATION:** After your complete English response, ALWAYS add a separator on a new line: [TRANSLATION]. On the next line, provide a full, natural Portuguese translation of your English response.
 End.`.trim();
@@ -476,136 +507,128 @@ async function handleSend(text){
 }
 
 /* ---------- LÓGICA DOS JOGOS ---------- */
+function showGame(gameId) {
+    document.querySelectorAll('.game-area').forEach(area => area.classList.add('hidden'));
+    document.querySelectorAll('.game-button').forEach(btn => btn.classList.remove('active'));
+    
+    $(`#${gameId}Game`).classList.remove('hidden');
+    $(`button[data-game="${gameId}"]`).classList.add('active');
+    
+    $('#gameWinMessage').classList.add('hidden');
+    state.currentGame.id = gameId;
+
+    switch (gameId) {
+        case 'wordEmoji': startWordEmojiGame(); break;
+        case 'memory': startMemoryGame(); break;
+        case 'scramble': startScrambleGame(); break;
+        case 'missing': startMissingGame(); break;
+        case 'oddOneOut': startOddOneOutGame(); break;
+    }
+}
+function setupGameNav() {
+    document.querySelectorAll('.game-button').forEach(btn => {
+        btn.addEventListener('click', () => showGame(btn.dataset.game));
+    });
+}
 function startWordEmojiGame() {
-    const gameFeedback = $('#gameFeedback');
-    const wordsContainer = $('#gameWordsContainer');
-    const emojisContainer = $('#gameEmojisContainer');
-    const winMessage = $('#gameWinMessage');
-
-    gameFeedback.textContent = '';
-    winMessage.classList.add('hidden');
-    wordsContainer.innerHTML = '';
-    emojisContainer.innerHTML = '';
-    state.currentGame = { selectedWord: null, selectedEmoji: null, pairsLeft: 0 };
-
-    const categoryKeys = Object.keys(gameVocab);
-    const randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const feedback = $('#wordEmojiGameFeedback'), wordsContainer = $('#gameWordsContainer'), emojisContainer = $('#gameEmojisContainer');
+    feedback.textContent = ''; wordsContainer.innerHTML = ''; emojisContainer.innerHTML = '';
+    state.currentGame = { ...state.currentGame, selectedWord: null, selectedEmoji: null, pairsLeft: 0 };
+    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
     const gamePairs = [...gameVocab[randomCategoryKey]];
     state.currentGame.pairsLeft = gamePairs.length;
-
-    const words = shuffle(gamePairs.map(p => p[0]));
-    const emojis = shuffle(gamePairs.map(p => p[1]));
-
+    const words = shuffle(gamePairs.map(p => p[0])), emojis = shuffle(gamePairs.map(p => p[1]));
     words.forEach(word => {
         const btn = document.createElement('button');
         btn.className = 'game-option p-4 bg-white rounded-xl border-2 border-slate-200 font-bold capitalize transition-transform';
-        btn.textContent = word;
-        btn.dataset.word = word;
-        btn.onclick = () => handleWordSelect(btn);
+        btn.textContent = word; btn.dataset.word = word;
+        btn.onclick = () => { if (state.currentGame.selectedWord) document.querySelectorAll('[data-word]').forEach(b => b.classList.remove('selected')); state.currentGame.selectedWord = btn; btn.classList.add('selected'); checkWordEmojiMatch(); };
         wordsContainer.appendChild(btn);
     });
-
     emojis.forEach(emoji => {
         const btn = document.createElement('button');
         btn.className = 'game-option p-4 bg-white rounded-xl border-2 border-slate-200 text-3xl transition-transform';
-        btn.textContent = emoji;
-        btn.dataset.emoji = emoji;
-        btn.onclick = () => handleEmojiSelect(btn);
+        btn.textContent = emoji; btn.dataset.emoji = emoji;
+        btn.onclick = () => { if (state.currentGame.selectedEmoji) document.querySelectorAll('[data-emoji]').forEach(b => b.classList.remove('selected')); state.currentGame.selectedEmoji = btn; btn.classList.add('selected'); checkWordEmojiMatch(); };
         emojisContainer.appendChild(btn);
     });
 }
-
-function handleWordSelect(btn) {
-    if (state.currentGame.selectedWord) {
-        document.querySelectorAll('[data-word]').forEach(b => b.classList.remove('selected'));
-    }
-    state.currentGame.selectedWord = btn;
-    btn.classList.add('selected');
-    checkGameMatch();
-}
-
-function handleEmojiSelect(btn) {
-    if (state.currentGame.selectedEmoji) {
-        document.querySelectorAll('[data-emoji]').forEach(b => b.classList.remove('selected'));
-    }
-    state.currentGame.selectedEmoji = btn;
-    btn.classList.add('selected');
-    checkGameMatch();
-}
-
-function checkGameMatch() {
+function checkWordEmojiMatch() {
     const { selectedWord, selectedEmoji } = state.currentGame;
     if (!selectedWord || !selectedEmoji) return;
-
-    const word = selectedWord.dataset.word;
-    const emoji = selectedEmoji.dataset.emoji;
-    
-    const category = Object.values(gameVocab).flat();
-    const correctPair = category.find(p => p[0] === word);
-
-    const gameFeedback = $('#gameFeedback');
-
+    const word = selectedWord.dataset.word, emoji = selectedEmoji.dataset.emoji;
+    const category = Object.values(gameVocab).flat(), correctPair = category.find(p => p[0] === word);
+    const feedback = $('#wordEmojiGameFeedback');
     if (correctPair && correctPair[1] === emoji) {
-        gameFeedback.textContent = 'Correto! 🎉';
-        gameFeedback.className = 'text-sm h-5 text-emerald-600 font-bold';
-        selectedWord.classList.add('correct');
-        selectedEmoji.classList.add('correct');
-        selectedWord.disabled = true;
-        selectedEmoji.disabled = true;
+        feedback.textContent = 'Correto! 🎉'; feedback.className = 'text-sm h-5 text-emerald-600 font-bold';
+        selectedWord.classList.add('correct'); selectedEmoji.classList.add('correct');
+        selectedWord.disabled = true; selectedEmoji.disabled = true;
         playCorrect();
         state.currentGame.pairsLeft--;
-        if (state.currentGame.pairsLeft === 0) {
-            $('#gameWinMessage').classList.remove('hidden');
-        }
+        if (state.currentGame.pairsLeft === 0) $('#gameWinMessage').classList.remove('hidden');
     } else {
-        gameFeedback.textContent = 'Tente novamente! 😟';
-        gameFeedback.className = 'text-sm h-5 text-red-600 font-bold';
-        selectedWord.classList.add('incorrect');
-        selectedEmoji.classList.add('incorrect');
+        feedback.textContent = 'Tente novamente! 😟'; feedback.className = 'text-sm h-5 text-red-600 font-bold';
+        selectedWord.classList.add('incorrect'); selectedEmoji.classList.add('incorrect');
         playWrong();
-        setTimeout(() => {
-            selectedWord.classList.remove('incorrect', 'selected');
-            selectedEmoji.classList.remove('incorrect', 'selected');
-        }, 800);
+        setTimeout(() => { selectedWord.classList.remove('incorrect'); selectedEmoji.classList.remove('incorrect'); }, 800);
     }
-    
-    // Reset selection
-    state.currentGame.selectedWord = null;
-    state.currentGame.selectedEmoji = null;
-    if (! (correctPair && correctPair[1] === emoji)) {
-       setTimeout(() => {
-            document.querySelectorAll('.game-option').forEach(b => b.classList.remove('selected'));
-            gameFeedback.textContent = '';
-        }, 1000);
-    }
+    state.currentGame.selectedWord = null; state.currentGame.selectedEmoji = null;
+    setTimeout(() => { document.querySelectorAll('.game-option').forEach(b => b.classList.remove('selected')); if (! (correctPair && correctPair[1] === emoji)) feedback.textContent = ''; }, 1000);
 }
+function startMemoryGame() {
+    const board = $('#memoryGameBoard'); board.innerHTML = ''; state.currentGame.flippedCards = []; state.currentGame.lockBoard = false;
+    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const pairs = gameVocab[randomCategoryKey];
+    let cards = [];
+    pairs.forEach(pair => {
+        cards.push({ type: 'word', value: pair[0], pairId: pair[0] });
+        cards.push({ type: 'emoji', value: pair[1], pairId: pair[0] });
+    });
+    shuffle(cards);
+    cards.forEach(cardData => {
+        const cardEl = document.createElement('div');
+        cardEl.className = 'memory-card w-24 h-24 cursor-pointer';
+        cardEl.dataset.pairId = cardData.pairId;
+        cardEl.innerHTML = `
+            <div class="front w-full h-full bg-violet-500 rounded-lg flex items-center justify-center"></div>
+            <div class="back w-full h-full bg-white rounded-lg flex items-center justify-center text-2xl font-bold border-2">${cardData.value}</div>`;
+        cardEl.addEventListener('click', () => {
+            if (state.currentGame.lockBoard || cardEl.classList.contains('flipped') || state.currentGame.flippedCards.length >= 2) return;
+            cardEl.classList.add('flipped');
+            state.currentGame.flippedCards.push(cardEl);
+            if (state.currentGame.flippedCards.length === 2) {
+                state.currentGame.lockBoard = true;
+                const [card1, card2] = state.currentGame.flippedCards;
+                if (card1.dataset.pairId === card2.dataset.pairId) {
+                    playCorrect();
+                    state.currentGame.flippedCards = [];
+                    state.currentGame.lockBoard = false;
+                    if (document.querySelectorAll('.memory-card:not(.flipped)').length === 0) $('#gameWinMessage').classList.remove('hidden');
+                } else {
+                    playWrong();
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        state.currentGame.flippedCards = [];
+                        state.currentGame.lockBoard = false;
+                    }, 1200);
+                }
+            }
+        });
+        board.appendChild(cardEl);
+    });
+}
+function startScrambleGame() { /* Placeholder for future implementation */ }
+function startMissingGame() { /* Placeholder for future implementation */ }
+function startOddOneOutGame() { /* Placeholder for future implementation */ }
 
 
 /* ---------- EVENTOS E INICIALIZAÇÃO ---------- */
 function setupEventListeners(){
-  // Navegação de Views
-  const conversationView = $('#conversationView');
-  const gamesView = $('#gamesView');
-  const btnConversation = $('#viewToggleConversation');
-  const btnGames = $('#viewToggleGames');
-
-  btnConversation.addEventListener('click', () => {
-      conversationView.style.display = 'block';
-      gamesView.style.display = 'none';
-      btnConversation.classList.add('bg-white', 'text-violet-600', 'shadow');
-      btnGames.classList.remove('bg-white', 'text-violet-600', 'shadow');
-  });
-  btnGames.addEventListener('click', () => {
-      conversationView.style.display = 'none';
-      gamesView.style.display = 'block';
-      btnGames.classList.add('bg-white', 'text-violet-600', 'shadow');
-      btnConversation.classList.remove('bg-white', 'text-violet-600', 'shadow');
-      startWordEmojiGame();
-  });
-  
-  $('#playAgainBtn').addEventListener('click', startWordEmojiGame);
-
-
+  setupGameNav();
+  $('#viewToggleConversation').addEventListener('click', () => { $('#conversationView').style.display = 'block'; $('#gamesView').style.display = 'none'; $('#viewToggleConversation').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleGames').classList.remove('bg-white', 'text-violet-600', 'shadow'); });
+  $('#viewToggleGames').addEventListener('click', () => { $('#conversationView').style.display = 'none'; $('#gamesView').style.display = 'block'; $('#viewToggleGames').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleConversation').classList.remove('bg-white', 'text-violet-600', 'shadow'); showGame('wordEmoji'); });
+  $('#playAgainBtn').addEventListener('click', () => showGame(state.currentGame.id));
   $('#btnHint').addEventListener('click',()=>{const c=categories.find(x=>x.id===state.categoryId);let hint=c&&c.missions.length?c.missions[Math.floor(Math.random()*c.missions.length)]:'Try a short sentence in English. 😀';addMsg({from:'ai',text:hint.replace('__',state.userName||'...'),translate:true});});
   $('#btnClear').addEventListener('click',()=>{chatEl.innerHTML='';state.history=[];addMsg({from:'ai',text:'New beginning! Choose a scene to continue. ✨',translate:true,speak:true});});
   $('#btnReset').addEventListener('click',()=>{ $('#confirmModal').classList.remove('hidden'); $('#confirmModal').classList.add('flex'); });
@@ -645,3 +668,4 @@ init();
 </script>
 </body>
 </html>
+
