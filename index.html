@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Adventure English - Jogo de Conversação</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    :root{
+      --bg1:#a5b4fc; --bg2:#fbcfe8; --bg3:#fef3c7;
+    }
+    html,body{ height:100%; }
+    body{ font-family:'Nunito',system-ui, -apple-system; background: linear-gradient(180deg,#f0f9ff 0%, #fff 100%); color:#0f172a; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+    #startScreen{ position:fixed; inset:0; background:linear-gradient(135deg,var(--bg1),var(--bg2),var(--bg3)); display:flex; align-items:center; justify-content:center; z-index:60; flex-direction:column; overflow:hidden; }
+    .balloon{ position:absolute; bottom:-140px; width:64px; height:86px; border-radius:50% 50% 45% 55%; box-shadow:0 6px 18px rgba(0,0,0,0.08); transform-origin:center bottom; animation:float 10s linear infinite; opacity:.95; }
+    @keyframes float{ 0%{ transform:translateY(0) rotate(0deg); } 100%{ transform:translateY(-130vh) rotate(16deg); opacity:0; } }
+    .card{ background: rgba(255,255,255,0.92); backdrop-filter: blur(6px); }
+    .bubble-ai::after, .bubble-kid::after{ content:""; position:absolute; bottom:-6px; width:0; height:0; border:8px solid transparent; }
+    .bubble-ai::after{ left:16px; border-top-color: rgba(255,255,255,.95); }
+    .bubble-kid::after{ right:16px; border-top-color: rgba(255,255,255,.95); }
+    .nice-scroll::-webkit-scrollbar{ width:10px; } .nice-scroll::-webkit-scrollbar-thumb{ background:linear-gradient(180deg,#60a5fa,#a78bfa); border-radius:8px; }
+    .nice-scroll{ scrollbar-width: thin; scrollbar-color:#a78bfa transparent; }
+    .vocab-card { transform-style: preserve-3d; transition: transform 0.6s; }
+    .vocab-card.flipped { transform: rotateY(180deg); }
+    .card-front, .card-back {
+        backface-visibility: hidden; position: absolute; top: 0; left: 0;
+        width: 100%; height: 100%; display: flex; align-items: center;
+        justify-content: center; padding: 1rem; border-radius: 0.75rem;
+    }
+    .card-back { transform: rotateY(180deg); background: rgba(255,255,255,0.92); color: #0f172a; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <!-- START / ONBOARD -->
+  <div id="startScreen">
+    <div class="z-10 text-center px-6">
+      <h1 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg mb-2">Adventure English 🎈</h1>
+      <p class="text-white/90 mb-6">Diga-nos seu nome e idade para começar a aventura!</p>
+      <div class="space-y-3">
+        <input id="startName" type="text" placeholder="Seu nome (ex: Ana)" class="w-72 md:w-96 px-4 py-3 rounded-2xl text-center outline-none" />
+        <input id="startAge" type="number" placeholder="Sua idade" min="5" max="12" class="w-72 md:w-96 px-4 py-3 rounded-2xl text-center outline-none" />
+        <div class="flex gap-3 justify-center mt-3">
+          <button id="btnStart" class="px-6 py-3 rounded-2xl bg-violet-600 text-white font-bold hover:bg-violet-700">Começar 🚀</button>
+        </div>
+      </div>
+    </div>
+    <div class="balloon" style="left:8%; background:linear-gradient(180deg,#fff,#f472b6); animation-delay:0s; transform:scale(0.9);"></div>
+    <div class="balloon" style="left:28%; background:linear-gradient(180deg,#fff,#60a5fa); animation-delay:1.5s; transform:scale(1.1);"></div>
+  </div>
+
+  <!-- APP (hidden until onboarding) -->
+  <div id="app" class="hidden max-w-7xl mx-auto p-6 space-y-6">
+    <header class="flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <div class="h-12 w-12 rounded-2xl flex items-center justify-center text-2xl shadow-lg bg-gradient-to-br from-sky-400 to-violet-400 text-white">🇬🇧🎈</div>
+        <div>
+          <h1 class="text-2xl md:text-3xl font-extrabold">Adventure English</h1>
+          <p class="text-sm md:text-base text-slate-600">Jogo de conversação com IA (crianças 5–12)</p>
+        </div>
+      </div>
+      <div class="flex items-center gap-3">
+        <label class="flex items-center gap-2 text-xs">
+          <input id="translateToggle" type="checkbox" class="accent-fuchsia-500">
+          Mostrar ajuda
+        </label>
+        <button id="testVoiceBtn" class="px-3 py-2 rounded-xl bg-sky-200 text-sky-900 text-sm">🔊 Ouvir voz</button>
+      </div>
+    </header>
+
+    <section id="profile-card" class="card rounded-2xl p-4 shadow-lg">
+      <h2 class="font-extrabold mb-3">Seu Perfil</h2>
+      <div class="flex flex-wrap items-center gap-4">
+        <div><label class="text-xs font-semibold">Nome</label><div id="profileName" class="text-lg font-bold">—</div></div>
+        <div><label class="text-xs font-semibold">Idade</label><div id="profileAge" class="text-lg font-bold">—</div></div>
+        <div class="ml-auto"><button id="editProfile" class="px-3 py-2 rounded-xl bg-amber-200 text-amber-900 text-sm">Editar</button></div>
+      </div>
+    </section>
+
+    <section class="grid lg:grid-cols-3 gap-6">
+      <div class="card rounded-2xl p-4 shadow-lg">
+        <h3 class="font-extrabold mb-3">Cenas de Roleplay</h3>
+        <div id="sceneList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      </div>
+      <div class="card rounded-2xl p-4 shadow-lg lg:col-span-2">
+        <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
+        <div id="catList" class="flex flex-wrap gap-2 mb-4"></div>
+        <div class="grid md:grid-cols-2 gap-6">
+          <div><h4 class="font-bold mb-2">Vocabulário</h4><div id="vocab" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div></div>
+          <div><h4 class="font-bold mb-2">Missões 🎯</h4><ul id="missions" class="list-disc pl-5 space-y-1 text-sm"></ul></div>
+        </div>
+      </div>
+    </section>
+
+    <main class="grid lg:grid-cols-3 gap-6">
+      <section class="lg:col-span-2 card rounded-2xl p-0 shadow-lg flex flex-col">
+        <div class="flex items-center justify-between px-4 pt-4">
+          <div><p id="activeSceneName" class="font-bold">Escolha uma cena</p><p class="text-xs text-slate-600">Dica: use frases curtas e emojis!</p></div>
+          <div class="flex items-center gap-3">
+            <button id="btnClear" class="text-xs px-3 py-2 rounded-lg bg-slate-100 hover:bg-slate-200">Limpar chat</button>
+            <button id="btnReset" class="text-xs px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Reiniciar</button>
+          </div>
+        </div>
+        <div id="chat" class="flex-1 px-4 pb-4 overflow-y-auto nice-scroll space-y-3 min-h-[320px]"></div>
+        <form id="chatForm" class="border-t border-slate-100 p-3 flex items-end gap-2">
+          <button type="button" id="btnHint" class="px-3 py-2 rounded-xl bg-amber-200 text-amber-900 font-bold hover:bg-amber-300">Dica 💡</button>
+          <div class="flex-1">
+            <textarea id="msgInput" rows="1" placeholder="Fale ou escreva em inglês..." class="w-full resize-none rounded-xl border border-slate-200 px-3 py-2 outline-none focus:ring-2 focus:ring-violet-300"></textarea>
+            <div class="flex items-center gap-2 mt-2">
+              <button type="button" id="btnMic" class="px-3 py-2 rounded-xl bg-emerald-500 text-white font-bold hover:bg-emerald-600">🎤 Falar</button>
+              <span id="micStatus" class="text-xs text-slate-600">Microfone pronto</span>
+            </div>
+          </div>
+          <button id="btnSend" class="px-4 py-2 rounded-xl bg-violet-500 text-white font-extrabold hover:bg-violet-600">Enviar ▶</button>
+        </form>
+      </section>
+      <aside class="space-y-6">
+        <section class="card rounded-2xl p-4 shadow-lg">
+          <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold">Progresso ⭐</h3><div id="levelBadge" class="text-xs font-extrabold text-slate-900 px-2 py-1 rounded-lg">Nível 1</div></div>
+          <div class="flex items-center gap-2"><div id="stars" class="flex text-2xl">☆☆☆☆☆</div><span id="xpText" class="text-xs text-slate-600">0/5</span></div>
+          <p class="text-xs text-slate-600 mt-2">Ganhe estrelas usando palavras do tema!</p>
+        </section>
+        <section class="card rounded-2xl p-4 shadow-lg">
+          <h3 class="font-extrabold mb-2">Voz atual 🎤</h3><p id="currentVoice" class="text-sm text-slate-700">Nenhuma</p>
+          <div class="mt-3"><label class="text-xs text-slate-600">Escolher voz</label><select id="voiceSelect" class="w-full mt-1 rounded-xl border border-slate-200 px-3 py-2"><option value="">(usar voz da cena)</option><option value="nova">Nova</option><option value="alloy">Alloy</option><option value="shimmer">Shimmer</option><option value="onyx">Onyx</option><option value="fable">Fable</option><option value="echo">Echo</option></select></div>
+        </section>
+        <section class="card rounded-2xl p-4 shadow-lg"><h3 class="font-extrabold mb-2">Medalhas 🏅</h3><div id="badges" class="flex flex-wrap gap-2"></div></section>
+      </aside>
+    </main>
+  </div>
+  <div id="confirmModal" class="fixed inset-0 bg-slate-900 bg-opacity-60 hidden items-center justify-center p-4 z-70">
+    <div class="bg-white rounded-2xl p-6 shadow-xl max-w-sm w-full">
+      <h3 class="font-extrabold text-xl mb-2">Reiniciar Progresso?</h3><p class="text-slate-600 text-sm mb-4">Esta ação apagará todo o seu progresso.</p>
+      <div class="flex justify-end gap-3"><button id="cancelReset" class="px-4 py-2 rounded-xl bg-slate-200 font-bold hover:bg-slate-300">Cancelar</button><button id="confirmReset" class="px-4 py-2 rounded-xl bg-red-500 text-white font-bold hover:bg-red-600">Confirmar</button></div>
+    </div>
+  </div>
+
+<script>
+/* =========================
+   CONFIGURAÇÃO
+   ========================= */
+// Esta configuração funciona tanto localmente quanto online no Render.
+const BACKEND_URL = ''; 
+
+const state = {
+  sceneId: null, categoryId: null, stars: 0, level: 1, showTranslation: false, history: [],
+  achievements: {}, userName: null, age: null, voice: null, currentAudio: null, vocabExpanded: {}
+};
+
+/* ---------- DADOS (CENAS, CATEGORIAS, VOCABULÁRIO) ---------- */
+const scenes = [
+  { id:'teacher', name:'Professora', nameEn:'Friendly Teacher', icon:'🧑‍🏫', style:'calma, encorajadora' }, { id:'zoo', name:'Guia do Zoo', nameEn:'Zoo Guide', icon:'🦁', style:'curiosa, divertida' },
+  { id:'restaurant', name:'Garçom', nameEn:'Restaurant Waiter', icon:'🍽️', style:'educada, paciente' }, { id:'doctor', name:'Médica', nameEn:'Clinic Doctor', icon:'🩺', style:'gentil, cuidadosa' },
+  { id:'shop', name:'Vendedor', nameEn:'Shop Seller', icon:'🛍️', style:'prestativa, alegre' }, { id:'playground', name:'Amigo no Parque', nameEn:'Playground Friend', icon:'🛝', style:'brincalhona, animada' },
+];
+const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "onyx", shop: "fable", playground: "echo" };
+const categories = [
+    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”','Despeça-se: “Goodbye! See you!”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome'], ['how are you?', 'como você está?'], ['my name is...', 'meu nome é...'], ['see you later', 'até mais tarde'], ['yes', 'sim'], ['no', 'não'], ['good morning', 'bom dia'], ['good afternoon', 'boa tarde'], ['good night', 'boa noite'], ['excuse me', 'com licença'], ["you're welcome", 'de nada'], ['nice to meet you', 'prazer em conhecer'], ['friend', 'amigo(a)'], ['boy', 'menino'], ['girl', 'menina'], ['what is this?', 'o que é isto?'], ['I understand', 'eu entendo'], ["I don't know", 'eu não sei'], ['can you help me?', 'pode me ajudar?'], ['of course', 'claro'], ['maybe', 'talvez'], ['welcome', 'bem-vindo(a)'], ['have a good day', 'tenha um bom dia'], ['take care', 'se cuida'], ['me too', 'eu também'], ['why', 'por quê'], ['because', 'porque'], ['now', 'agora'], ['later', 'mais tarde'], ['today', 'hoje'], ['tomorrow', 'amanhã']] },
+    { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco: “One, two, three, four, five!”','Diga sua idade: “I am __ years old.”','Pergunte a idade: “How old are you?”'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis'], ['seven', 'sete'], ['eight', 'oito'], ['nine', 'nove'], ['ten', 'dez'], ['eleven', 'onze'], ['twelve', 'doze'], ['thirteen', 'treze'], ['fourteen', 'catorze'], ['fifteen', 'quinze'], ['sixteen', 'dezesseis'], ['seventeen', 'dezessete'], ['eighteen', 'dezoito'], ['nineteen', 'dezenove'], ['twenty', 'vinte'], ['thirty', 'trinta'], ['forty', 'quarenta'], ['fifty', 'cinquenta'], ['one hundred', 'cem'], ['first', 'primeiro'], ['second', 'segundo'], ['third', 'terceiro'], ['number', 'número'], ['count', 'contar'], ['how many?', 'quantos?'], ['plus', 'mais'], ['minus', 'menos'], ['equals', 'é igual a'], ['zero', 'zero'], ['a lot', 'muitos']] },
+    { id:'colors', icon:'🎨', name:'Cores & Formas', englishName: 'Colors & Shapes', missions:['Descreva: “My ball is red.”','Pergunte: “What color is it?”','Fale de uma forma: “It is a circle.”'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja'], ['purple', 'roxo'], ['black', 'preto'], ['white', 'branco'], ['brown', 'marrom'], ['gray', 'cinza'], ['rainbow', 'arco-íris'], ['color', 'cor'], ['dark', 'escuro'], ['light', 'claro'], ['bright', 'brilhante'], ['circle', 'círculo'], ['square', 'quadrado'], ['triangle', 'triângulo'], ['star', 'estrela'], ['heart', 'coração'], ['rectangle', 'retângulo'], ['oval', 'oval'], ['diamond', 'losango'], ['shape', 'forma'], ['line', 'linha'], ['dot', 'ponto'], ['side', 'lado'], ['corner', 'canto'], ['big', 'grande'], ['small', 'pequeno'], ['long', 'longo'], ['short', 'curto'], ['round', 'redondo'], ['straight', 'reto']] },
+    { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Diga o que vê: “I see a __.”','Qual seu animal favorito?','Descreva um animal: “The __ is big.”'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco'], ['bear', 'urso'], ['tiger', 'tigre'], ['snake', 'cobra'], ['rabbit', 'coelho'], ['horse', 'cavalo'], ['cow', 'vaca'], ['pig', 'porco'], ['sheep', 'ovelha'], ['chicken', 'frango/galinha'], ['duck', 'pato'], ['frog', 'sapo'], ['bee', 'abelha'], ['butterfly', 'borboleta'], ['spider', 'aranha'], ['whale', 'baleia'], ['shark', 'tubarão'], ['dolphin', 'golfinho'], ['octopus', 'polvo'], ['crab', 'caranguejo'], ['turtle', 'tartaruga'], ['alligator', 'jacaré'], ['hippo', 'hipopótamo'], ['giraffe', 'girafa'], ['zebra', 'zebra'], ['kangaroo', 'canguru'], ['elephant', 'elefante'], ['animal', 'animal'], ['pet', 'animal de estimação'], ['zoo', 'zoológico']] },
+    { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Faça um pedido: “I would like __, please.”','Diga o que gosta: “I like __.”','Pergunte: “Do you like __?”'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza'], ['cake', 'bolo'], ['juice', 'suco'], ['cheese', 'queijo'], ['egg', 'ovo'], ['rice', 'arroz'], ['ice cream', 'sorvete'], ['strawberry', 'morango'], ['grapes', 'uvas'], ['watermelon', 'melancia'], ['carrot', 'cenoura'], ['tomato', 'tomate'], ['potato', 'batata'], ['lettuce', 'alface'], ['soup', 'sopa'], ['salad', 'salada'], ['sandwich', 'sanduíche'], ['hamburger', 'hambúrguer'], ['fries', 'batatas fritas'], ['pasta', 'macarrão'], ['chicken', 'frango'], ['beef', 'carne'], ['soda', 'refrigerante'], ['tea', 'chá'], ['coffee', 'café'], ['chocolate', 'chocolate'], ['cookie', 'biscoito'], ['candy', 'doce'], ['hungry', 'com fome'], ['thirsty', 'com sede']] },
+    { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Apresente alguém: “This is my __.”','Pergunte: “Who is he/she?”','Fale de um amigo: “My friend is __.”'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['grandmother', 'avó'], ['grandfather', 'avô'], ['teacher', 'professor(a)'], ['aunt', 'tia'], ['uncle', 'tio'], ['cousin', 'primo(a)'], ['son', 'filho'], ['daughter', 'filha'], ['parents', 'pais'], ['children', 'crianças/filhos'], ['man', 'homem'], ['woman', 'mulher'], ['person', 'pessoa'], ['people', 'pessoas'], ['family', 'família'], ['home', 'lar'], ['house', 'casa'], ['love', 'amor'], ['happy', 'feliz'], ['together', 'juntos'], ['old', 'velho(a)'], ['young', 'jovem'], ['tall', 'alto(a)'], ['short', 'baixo(a)'], ['kind', 'gentil'], ['nice', 'legal'], ['my', 'meu/minha'], ['your', 'seu/sua'], ['he', 'ele'], ['she', 'ela']] },
+    { id:'school', icon:'🏫', name:'Escola', englishName: 'School', missions:['Peça algo: “Can I have a pen, please?”','Diga o que tem: “I have a __.”','Pergunte: “Where is my book?”'], vocab:[['teacher', 'professor(a)'], ['book', 'livro'], ['pen', 'caneta'], ['bag', 'mochila'], ['desk', 'carteira'], ['homework', 'lição de casa'], ['student', 'aluno(a)'], ['classroom', 'sala de aula'], ['pencil', 'lápis'], ['eraser', 'borracha'], ['ruler', 'régua'], ['library', 'biblioteca'], ['playground', 'parquinho'], ['computer', 'computador'], ['notebook', 'caderno'], ['scissors', 'tesoura'], ['glue', 'cola'], ['paint', 'tinta'], ['drawing', 'desenho'], ['lesson', 'lição'], ['exam', 'prova'], ['friends', 'amigos'], ['learn', 'aprender'], ['read', 'ler'], ['write', 'escrever'], ['draw', 'desenhar'], ['play', 'brincar'], ['sing', 'cantar'], ['listen', 'ouvir'], ['ask', 'perguntar'], ['answer', 'responder'], ['help', 'ajudar'], ['idea', 'ideia'], ['story', 'história'], ['page', 'página']] },
+];
+
+/* ---------- TRADUÇÃO E UTILITÁRIOS ---------- */
+const miniDict = new Map();
+for (const cat of categories) for (const [en,pt] of cat.vocab) miniDict.set(en.toLowerCase(), pt.toLowerCase());
+const sceneTranslations = new Map(scenes.map(s => [s.nameEn, s.name]));
+function approxTranslateToPT(text){
+  let translatedText = text;
+  for (let [enName, ptName] of sceneTranslations) { translatedText = translatedText.replace(new RegExp(`\\b${enName}\\b`, 'gi'), ptName); }
+  const vocabKeys = Array.from(miniDict.keys()).sort((a, b) => b.length - a.length);
+  const regex = new RegExp(`\\b(${vocabKeys.join('|').replace(/[?]/g, '\\?')})\\b`, 'gi');
+  return translatedText.replace(regex, (match) => miniDict.get(match.toLowerCase()) || match);
+}
+const $ = sel => document.querySelector(sel);
+const chatEl = $('#chat'); const msgInput = $('#msgInput');
+function scrollBottom(){ chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' }); }
+
+/* ---------- ÁUDIO E SONS ---------- */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playPop(){ try{ const o=audioCtx.createOscillator(),g=audioCtx.createGain(),d=audioCtx.currentTime;o.type='triangle';o.frequency.setValueAtTime(800,d);g.gain.setValueAtTime(.06,d);o.connect(g);g.connect(audioCtx.destination);o.start(d);o.stop(d+.08) }catch(e){} }
+async function ttsSpeak(text, button = null) {
+    if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio.onended = null; state.currentAudio.src = ''; state.currentAudio = null; }
+    if (audioCtx.state === 'suspended') { await audioCtx.resume().catch(()=>{}); }
+    if (button) { button.disabled = true; button.textContent = '🔄'; }
+    const voiceToUse = $('#voiceSelect')?.value || state.voice || 'alloy';
+    try {
+        const res = await fetch(`${BACKEND_URL}/api/tts`, {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ input: text, voice: voiceToUse })
+        });
+        if (!res.ok) { throw new Error('TTS failed with status ' + res.status); }
+        const blob = await res.blob();
+        const newAudio = new Audio(URL.createObjectURL(blob));
+        state.currentAudio = newAudio;
+        await newAudio.play().catch(e => console.warn("Autoplay was blocked", e));
+        newAudio.onended = () => {
+            if (button && document.body.contains(button)) { button.disabled = false; button.textContent = '🔊'; }
+            if (state.currentAudio === newAudio) { state.currentAudio = null; }
+        };
+    } catch (err) {
+        console.error("TTS Error:", err);
+        addMsg({from:'ai', text:'Desculpe, tive um problema para gerar o áudio. 🔇', translate:false, speak:false});
+        if (button) { button.disabled = false; button.textContent = '🔊'; }
+    }
+}
+
+/* ---------- UI: MENSAGENS, MEDALHAS, CENAS, ETC. ---------- */
+function addMsg({from='ai', text, translate=false, speak=true}){
+  const wrap=document.createElement('div'); wrap.className=`relative flex ${from==='ai'?'justify-start':'justify-end'}`;
+  const bubble=document.createElement('div'); bubble.className=`relative max-w-[82%] px-4 py-3 rounded-2xl shadow card ${from==='ai'?'bubble-ai':'bubble-kid'}`; bubble.style.margin='6px 0';
+  const contentDiv=document.createElement('div'); contentDiv.className='text-[15px] leading-relaxed'; contentDiv.textContent=text; bubble.appendChild(contentDiv);
+  if (state.showTranslation && translate && from==='ai') {
+    const t=document.createElement('div'); t.className='text-[12px] text-slate-600 mt-1'; t.textContent=`PT: ${approxTranslateToPT(text)}`; bubble.appendChild(t);
+  }
+  if (from==='ai'){
+    const controls=document.createElement('div'); controls.style.marginTop='8px';
+    const listenBtn=document.createElement('button'); listenBtn.className='px-3 py-1 rounded-full text-xs bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold';
+    listenBtn.textContent='🔊 Ouvir'; listenBtn.onclick=()=>ttsSpeak(text, listenBtn);
+    controls.appendChild(listenBtn); bubble.appendChild(controls);
+    if(speak) ttsSpeak(text);
+  }
+  wrap.appendChild(bubble); chatEl.appendChild(wrap); scrollBottom();
+}
+function setStars(n){
+  state.stars=n; $('#stars').textContent='★'.repeat(n)+'☆'.repeat(5-n); $('#xpText').textContent=`${n}/5`;
+  if(n>=5){ state.level++; $('#levelBadge').textContent=`Nível ${state.level}`; giveMedal('five-stars'); setTimeout(()=>setStars(0),400); }
+}
+const medalDefs = [
+  {id:'first-talk', label:'1ª conversa', emoji:'🥇'}, {id:'vocab-star', label:'Palavra do Tema', emoji:'🌟'},
+  {id:'five-stars', label:'5 Estrelas', emoji:'⭐⭐⭐⭐⭐'}, {id:'animal-fan', label:'Amigo dos Animais', emoji:'🐾'},
+  {id:'polite-kid', label:'Criança Educada', emoji:'🙏'}, {id:'curious-mind', label:'Mente Curiosa', emoji:'❓'},
+  {id:'feeling-fine', label:'Expressivo', emoji:'😊'}
+];
+function renderBadges(){
+  const box=$('#badges'); box.innerHTML='';
+  medalDefs.forEach(m=>{
+    const got=!!state.achievements[m.id];
+    const b=document.createElement('div'); b.className=`px-3 py-2 rounded-xl border ${got?'border-emerald-300 bg-emerald-50 text-emerald-800':'border-slate-200 bg-white/70 text-slate-500'}`;
+    b.innerHTML=`<span class="mr-1">${m.emoji}</span> <span class="font-bold">${m.label}</span>`; box.appendChild(b);
+  });
+}
+function giveMedal(id){ if(state.achievements[id])return; state.achievements[id]=true; renderBadges(); addMsg({from:'ai',text:`Você ganhou a medalha: ${id}! 🏅`,translate:true,speak:false}); }
+function renderScenes(){
+  const box=$('#sceneList'); box.innerHTML='';
+  scenes.forEach(s=>{
+    const btn=document.createElement('button'); btn.className='pick w-full text-left px-4 py-3 rounded-xl border border-slate-200 hover:border-violet-300 hover:bg-violet-50 transition';
+    btn.innerHTML=`<div class="flex items-center gap-3"><div class="h-10 w-10 rounded-xl flex items-center justify-center text-2xl" style="background:linear-gradient(135deg,#60a5fa,#a78bfa);color:white;">${s.icon}</div><div><div class="font-extrabold">${s.name}</div><div class="text-xs text-slate-600">${s.style}</div></div></div>`;
+    btn.addEventListener('click',()=>{
+      state.sceneId=s.id; state.voice=sceneVoices[s.id]||'alloy'; $('#activeSceneName').textContent=s.name;
+      [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
+      btn.classList.add('ring-2','ring-violet-400','bg-violet-50'); $('#currentVoice').textContent=`Voz: ${state.voice}`;
+      addMsg({from:'ai',text:`Hello! I am your ${s.nameEn}. Let’s talk! 😊`,translate:true}); playPop();
+    });
+    box.appendChild(btn);
+  });
+}
+function renderCategories(){
+  const box=$('#catList'); box.innerHTML='';
+  categories.forEach(c=>{
+    const chip=document.createElement('button'); chip.className='pick px-3 py-2 rounded-full text-sm border border-slate-200 bg-white/70 hover:bg-white font-bold';
+    chip.innerHTML=`${c.icon} ${c.name}`;
+    chip.addEventListener('click',()=>{
+      state.categoryId=c.id;
+      [...box.children].forEach(ch=>ch.classList.remove('ring-2','ring-sky-400','bg-sky-50'));
+      chip.classList.add('ring-2','ring-sky-400','bg-sky-50'); renderVocab(); renderMissions();
+      addMsg({from:'ai',text:`Ótima escolha: ${c.englishName}! Tente usar uma dessas palavras. 🌟`,translate:true}); playPop();
+    });
+    box.appendChild(chip);
+  });
+}
+function renderVocab(){
+  const c=categories.find(x=>x.id===state.categoryId),box=$('#vocab'); box.innerHTML='';
+  if(!c){ box.innerHTML='<div class="text-sm text-slate-600 col-span-full">Escolha uma categoria.</div>'; return; }
+  const isExpanded=!!state.vocabExpanded[state.categoryId],wordsToDisplay=isExpanded?c.vocab:c.vocab.slice(0,6);
+  wordsToDisplay.forEach(([en,pt])=>{
+    const card=document.createElement('div'); card.className='vocab-card w-full h-20 relative cursor-pointer'; card.style.perspective='1000px';
+    const front=document.createElement('div'); front.className='card-front border border-slate-200 bg-white/80 hover:bg-white text-center'; front.innerHTML=`<div class="font-extrabold text-sm text-slate-800 capitalize">${en}</div>`;
+    const back=document.createElement('div'); back.className='card-back border border-slate-200'; back.innerHTML=`<div class="font-bold text-sm text-slate-800 capitalize">${pt}</div>`;
+    card.append(front,back); card.addEventListener('click',()=>{ card.classList.toggle('flipped'); ttsSpeak(en,null); if(card.classList.contains('flipped')){setTimeout(()=>card.classList.remove('flipped'),5000)} });
+    box.appendChild(card);
+  });
+  const btnContainer=document.createElement('div'); btnContainer.className='sm:col-span-3 col-span-2 flex items-center justify-center';
+  if(isExpanded){
+    const lessBtn=document.createElement('button'); lessBtn.className='w-full px-4 py-2 rounded-xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200 transition';
+    lessBtn.textContent='Mostrar menos...'; lessBtn.onclick=()=>{state.vocabExpanded[state.categoryId]=false;playPop();renderVocab();}; btnContainer.appendChild(lessBtn);
+  }else if(c.vocab.length>6){
+    const moreBtn=document.createElement('button'); moreBtn.className='w-full px-4 py-2 rounded-xl bg-sky-100 text-sky-800 font-bold hover:bg-sky-200 transition';
+    moreBtn.textContent=`Mostrar mais (${c.vocab.length-6})...`; moreBtn.onclick=()=>{state.vocabExpanded[state.categoryId]=true;playPop();renderVocab();}; btnContainer.appendChild(moreBtn);
+  }
+  if(btnContainer.hasChildNodes()) box.appendChild(btnContainer);
+}
+function renderMissions(){
+  const c=categories.find(x=>x.id===state.categoryId),ul=$('#missions'); ul.innerHTML='';
+  if(!c){ ul.innerHTML='<li class="text-slate-600">Escolha uma categoria.</li>'; return; }
+  c.missions.forEach(m=>{const li=document.createElement('li');li.className='text-slate-700';li.textContent=m.replace('__',state.userName||'...');ul.appendChild(li);});
+}
+
+/* ---------- LÓGICA DO CHAT COM BACKEND ---------- */
+function getAgeGuidance(age){
+  if(!age||age>9)return'Use simple English (A2 level). You can introduce a new word occasionally.';
+  if(age<=6)return'Use extremely simple English (A0 level), with 1-4 word sentences and lots of emojis.';
+  return'Use simple English (A1 level). Use short, clear sentences. Ask simple questions.';
+}
+function buildSystemPrompt(){
+  const scene=scenes.find(s=>s.id===state.sceneId),cat=categories.find(c=>c.id===state.categoryId);
+  return`You are a friendly English tutor for a ${state.age||'young'} year-old child named ${state.userName||'friend'}.
+Your roleplay character is "${scene?scene.nameEn:'a friendly helper'}" (${scene?scene.style:'friendly'}).
+**CRITICAL: Your language style MUST be adapted for a ${state.age||'young'} year-old child. ${getAgeGuidance(state.age)}**
+Goals:
+- Keep conversation going by asking simple questions. One idea at a time.
+- Use the child's name, ${state.userName||'friend'}, occasionally.
+- Gently correct mistakes with a short example: "We say 'I am 7 years old'. Great try! ⭐"
+- Keep responses to 1-3 short sentences. NEVER switch to Portuguese.
+End.`.trim();
+}
+async function handleSend(text){
+  if(!text||!text.trim())return; addMsg({from:'kid',text:text,speak:false});
+  const lower=text.toLowerCase(),cat=categories.find(c=>c.id===state.categoryId);
+  if(cat&&cat.vocab.some(([en])=>lower.includes(en.toLowerCase()))){setStars(Math.min(5,state.stars+1));giveMedal('vocab-star');}
+  if(/(please|thank you)/i.test(lower))giveMedal('polite-kid'); if(/\b(what|where|who|how|why|do you)\b/i.test(lower))giveMedal('curious-mind');
+  if(!state.achievements['first-talk'])giveMedal('first-talk');
+  try{
+    state.history.push({role:'user',content:text});
+    const res=await fetch(`${BACKEND_URL}/api/chat`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({messages:state.history.slice(-12),systemPrompt:buildSystemPrompt()})});
+    if(!res.ok)throw new Error('Falha na comunicação com o backend: '+res.status);
+    const data=await res.json(),aiText=data.reply||'I am here to help! 😊';
+    addMsg({from:'ai',text:aiText,translate:true}); state.history.push({role:'assistant',content:aiText});
+  }catch(err){console.error(err);addMsg({from:'ai',text:'Tive um problema de comunicação com o servidor. 🛟',translate:false,speak:false});}
+}
+
+/* ---------- EVENTOS E INICIALIZAÇÃO ---------- */
+function setupEventListeners(){
+  $('#btnHint').addEventListener('click',()=>{const c=categories.find(x=>x.id===state.categoryId);let hint=c&&c.missions.length?c.missions[Math.floor(Math.random()*c.missions.length)]:'Try a short sentence in English. 😀';addMsg({from:'ai',text:hint.replace('__',state.userName||'...'),translate:true});});
+  $('#btnClear').addEventListener('click',()=>{chatEl.innerHTML='';state.history=[];addMsg({from:'ai',text:'New beginning! Choose a scene to continue. ✨',translate:true,speak:true});});
+  $('#btnReset').addEventListener('click',()=>{ $('#confirmModal').classList.remove('hidden'); $('#confirmModal').classList.add('flex'); });
+  $('#cancelReset').addEventListener('click',()=>{ $('#confirmModal').classList.add('hidden'); $('#confirmModal').classList.remove('flex'); });
+  $('#confirmReset').addEventListener('click',()=>{localStorage.clear();window.location.reload();});
+  $('#chatForm').addEventListener('submit',e=>{e.preventDefault();const text=msgInput.value.trim();if(text){msgInput.value='';msgInput.style.height='auto';handleSend(text);}});
+  msgInput.addEventListener('input',()=>{msgInput.style.height='auto';msgInput.style.height=Math.min(120,msgInput.scrollHeight)+'px';});
+  msgInput.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#chatForm').dispatchEvent(new Event('submit'));}});
+  $('#translateToggle').addEventListener('change',e=>{state.showTranslation=!!e.target.checked;});
+  $('#voiceSelect').addEventListener('change',()=>{const v=$('#voiceSelect').value;$('#currentVoice').textContent=v?`Voz: ${v}`:`Voz: ${state.voice||'—'}`;});
+  $('#testVoiceBtn').addEventListener('click',()=>{ttsSpeak(state.userName?`Hello ${state.userName}, nice to meet you!`:'Hello! Let us practice!',null);});
+  $('#editProfile').addEventListener('click',()=>{ $('#startName').value=state.userName||''; $('#startAge').value=state.age||''; $('#startScreen').style.display='flex'; $('#app').classList.add('hidden');});
+  $('#btnStart').addEventListener('click',()=>{
+    const name=$('#startName').value.trim(),age=$('#startAge').value.trim();
+    if(!name||!age){const msg=document.createElement('div');msg.textContent='Por favor, preencha nome e idade.';msg.className='text-red-600 font-bold mt-2 text-sm';const oldMsg=$('#startScreen').querySelector('.text-red-600');if(oldMsg)oldMsg.remove();$('#btnStart').parentElement.insertBefore(msg,$('#btnStart'));return;}
+    state.userName=name;state.age=age;localStorage.setItem('ae_name',name);localStorage.setItem('ae_age',age);
+    $('#profileName').textContent=name;$('#profileAge').textContent=age;
+    $('#startScreen').style.display='none';$('#app').classList.remove('hidden');chatEl.innerHTML='';
+    addMsg({from:'ai',text:`Hello ${name}! Welcome to Adventure English 🎉`,translate:true,speak:true});
+  });
+  try{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;recognition.onstart=()=>{recognizing=true;$('#micStatus').textContent='Ouvindo...';$('#btnMic').textContent='⏹️';};recognition.onend=()=>{recognizing=false;$('#micStatus').textContent='Microfone pronto';$('#btnMic').textContent='🎤';};recognition.onerror=e=>{$('#micStatus').textContent='Erro no microfone.';console.error('Mic error:',e.error);};recognition.onresult=e=>{const text=e.results[0][0].transcript;msgInput.value=text;handleSend(text);};$('#btnMic').addEventListener('click',()=>{if(!recognition)return;if(!recognizing){recognition.start();}else{recognition.stop();}});}}catch(err){$('#micStatus').textContent='Fala não suportada.';}
+}
+function init(){
+  const savedName=localStorage.getItem('ae_name'),savedAge=localStorage.getItem('ae_age');
+  if(savedName&&savedAge){
+    state.userName=savedName;state.age=savedAge;$('#profileName').textContent=savedName;$('#profileAge').textContent=savedAge;
+    $('#startScreen').style.display='none';$('#app').classList.remove('hidden');
+    addMsg({from:'ai',text:`Welcome back, ${savedName}! Let's continue! 😊`,translate:true,speak:true});
+  }else{
+    $('#startScreen').style.display='flex';$('#app').classList.add('hidden');
+  }
+  renderScenes();renderCategories();renderVocab();renderMissions();setStars(0);renderBadges();
+  $('#activeSceneName').textContent='Escolha uma cena';$('#currentVoice').textContent='Nenhuma';
+  setupEventListeners();
+}
+init();
+</script>
+</body>
+</html>
+
