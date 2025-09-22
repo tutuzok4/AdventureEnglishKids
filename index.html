@@ -281,7 +281,7 @@ const gameVocab = {
 };
 const oddOneOutSets = [
     { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one_emoji: '🐶', answer: 'dog' },
-    { emojis: ['🚗', '🚲', '🚀', '🥐'], odd_one_emoji: '🥐', answer: 'croissant' },
+    { emojis: ['🚗', '🚲', '🚀', '⭐'], odd_one_emoji: '⭐', answer: 'star' },
     { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one_emoji: '👑', answer: 'crown' },
     { emojis: ['👕', '👖', '☀️', '👗'], odd_one_emoji: '☀️', answer: 'sun' },
 ];
@@ -589,7 +589,7 @@ function startMemoryGame() {
     });
 }
 function createLetterKeyboard(word, answerContainer, lettersContainer, onCorrect) {
-    const letters = shuffle([...new Set(word.split('')), ...'abcdefghijklmnopqrstuvwxyz'.split('').filter(l => !word.includes(l)).slice(0, 5)]);
+    const letters = shuffle([...new Set(word.split('')), ...'abcdefghijklmnopqrstuvwxyz'.split('').filter(l => !word.includes(l)).slice(0, 8)]);
     lettersContainer.innerHTML = '';
     answerContainer.textContent = '';
     letters.forEach(letter => {
@@ -597,38 +597,75 @@ function createLetterKeyboard(word, answerContainer, lettersContainer, onCorrect
         btn.className = 'game-option w-10 h-10 bg-white rounded-lg text-2xl font-bold border-2';
         btn.textContent = letter;
         btn.onclick = () => {
+            if(answerContainer.textContent.length < word.length) {
+              answerContainer.textContent += letter;
+            }
+        };
+        lettersContainer.appendChild(btn);
+    });
+    const backspaceBtn = document.createElement('button');
+    backspaceBtn.className = 'game-option w-10 h-10 bg-white rounded-lg text-2xl font-bold border-2';
+    backspaceBtn.innerHTML = '⌫';
+    backspaceBtn.onclick = () => {
+        answerContainer.textContent = answerContainer.textContent.slice(0, -1);
+    };
+    lettersContainer.appendChild(backspaceBtn);
+
+    const checkBtn = document.createElement('button');
+    checkBtn.className = 'w-full mt-4 px-6 py-2 bg-violet-500 text-white font-bold rounded-xl';
+    checkBtn.textContent = 'Verificar';
+    checkBtn.onclick = () => {
+        if (answerContainer.textContent === word) {
+            onCorrect();
+        } else {
+            playWrong(); $('#gameFeedback').textContent = 'Incorreto, tente de novo!';
+            answerContainer.classList.add('incorrect');
+            setTimeout(() => {
+                answerContainer.classList.remove('incorrect');
+            }, 800);
+        }
+    };
+    lettersContainer.parentElement.appendChild(checkBtn);
+}
+function startScrambleGame() { 
+    const emojiContainer = $('#scrambleEmoji'), answerContainer = $('#scrambleAnswer'), lettersContainer = $('#scrambleLetters'), feedback = $('#gameFeedback'), clearBtn = $('#scrambleClearBtn');
+    emojiContainer.innerHTML = ''; answerContainer.innerHTML = ''; lettersContainer.innerHTML = ''; feedback.textContent = '';
+    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
+    const [word, emoji] = shuffle(gameVocab[randomCategoryKey])[0];
+    emojiContainer.textContent = emoji;
+    const letters = shuffle(word.split(''));
+     letters.forEach(letter => {
+        const btn = document.createElement('button');
+        btn.className = 'game-option w-10 h-10 bg-white rounded-lg text-2xl font-bold border-2';
+        btn.textContent = letter;
+        btn.onclick = () => {
             answerContainer.textContent += letter;
-            if (answerContainer.textContent.length === word.length) {
-                if (answerContainer.textContent === word) {
-                    onCorrect();
+            btn.disabled = true;
+            btn.classList.add('opacity-50');
+            if(answerContainer.textContent.length === word.length) {
+                if(answerContainer.textContent === word) {
+                    playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
+                    $('#gameWinMessage').classList.remove('hidden');
                 } else {
-                    playWrong(); $('#gameFeedback').textContent = 'Incorreto, tente de novo!';
-                    answerContainer.classList.add('incorrect');
-                    setTimeout(() => {
-                        answerContainer.textContent = '';
-                        answerContainer.classList.remove('incorrect');
-                    }, 800);
+                    playWrong(); feedback.textContent = 'Incorreto, tente de novo!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-red-600';
                 }
             }
         };
         lettersContainer.appendChild(btn);
     });
-}
-function startScrambleGame() { 
-    const emojiContainer = $('#scrambleEmoji'), answerContainer = $('#scrambleAnswer'), lettersContainer = $('#scrambleLetters'), feedback = $('#gameFeedback');
-    emojiContainer.innerHTML = ''; answerContainer.innerHTML = ''; lettersContainer.innerHTML = ''; feedback.textContent = '';
-    const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
-    const [word, emoji] = shuffle(gameVocab[randomCategoryKey])[0];
-    emojiContainer.textContent = emoji;
-    createLetterKeyboard(word, answerContainer, lettersContainer, () => {
-        playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
-        $('#gameWinMessage').classList.remove('hidden');
-    });
-    $('#scrambleClearBtn').onclick = () => { answerContainer.textContent = ''; feedback.textContent = ''; };
+    clearBtn.onclick = () => {
+        answerContainer.textContent = '';
+        feedback.textContent = '';
+        lettersContainer.querySelectorAll('button').forEach(btn => {
+            btn.disabled = false;
+            btn.classList.remove('opacity-50');
+        });
+    };
 }
 function startMissingGame() {
     const container = $('#missingEmojisContainer'), instruction = $('#missingGameInstruction'), feedback = $('#gameFeedback'), answerContainer = $('#missingAnswer'), lettersContainer = $('#missingLetters');
     container.innerHTML = ''; instruction.textContent = 'Memorize os emojis...'; feedback.textContent = ''; answerContainer.textContent = ''; lettersContainer.innerHTML = '';
+    if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
     const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
     const items = shuffle([...gameVocab[randomCategoryKey]]).slice(0, 4);
     const missingItem = items[0];
@@ -643,6 +680,7 @@ function startMissingGame() {
             createLetterKeyboard(missingItem[0], answerContainer, lettersContainer, () => {
                 playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
                 $('#gameWinMessage').classList.remove('hidden');
+                if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
             });
         }, 1500);
     }, 2500);
@@ -650,11 +688,13 @@ function startMissingGame() {
 function startOddOneOutGame() {
     const container = $('#oddOneOutEmojis'), answerContainer = $('#oddOneOutAnswer'), lettersContainer = $('#oddOneOutLetters'), feedback = $('#gameFeedback');
     container.innerHTML = ''; answerContainer.textContent = ''; lettersContainer.innerHTML = ''; feedback.textContent = '';
+    if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
     const currentSet = shuffle([...oddOneOutSets])[0];
     shuffle(currentSet.emojis).forEach(emoji => container.innerHTML += `<div class="text-5xl">${emoji}</div>`);
     createLetterKeyboard(currentSet.answer, answerContainer, lettersContainer, () => {
         playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
         $('#gameWinMessage').classList.remove('hidden');
+        if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
     });
 }
 
