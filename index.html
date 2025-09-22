@@ -190,17 +190,7 @@ const categories = [
     { id:'weather', icon:'⛅', name:'Tempo & Estações', englishName: 'Weather & Seasons', missions:['Descreva o dia: “It is sunny today.”','Pergunte como está o tempo.','Diga sua estação favorita.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento'], ['cloud', 'nuvem'], ['storm', 'tempestade'], ['fog', 'nevoeiro'], ['ice', 'gelo'], ['temperature', 'temperatura'], ['degree', 'grau'], ['weather forecast', 'previsão do tempo'], ['season', 'estação'], ['spring', 'primavera'], ['summer', 'verão'], ['autumn', 'outono'], ['winter', 'inverno'], ['humid', 'úmido'], ['dry', 'seco'], ['breeze', 'brisa'], ['hurricane', 'furacão'], ['tornado', 'tornado'], ['lightning', 'relâmpago'], ['thunder', 'trovão'], ['rainbow', 'arco-íris'], ['clear sky', 'céu limpo'], ['overcast', 'nublado'], ['drizzle', 'chuvisco'], ['hail', 'granizo'], ['blizzard', 'nevasca'], ['heatwave', 'onda de calor'], ['climate', 'clima'], ['atmosphere', 'atmosfera'], ['humidity', 'umidade']] },
 ];
 
-/* ---------- TRADUÇÃO E UTILITÁRIOS ---------- */
-const miniDict = new Map();
-for (const cat of categories) for (const [en,pt] of cat.vocab) miniDict.set(en.toLowerCase(), pt.toLowerCase());
-const sceneTranslations = new Map(scenes.map(s => [s.nameEn, s.name]));
-function approxTranslateToPT(text){
-  let translatedText = text;
-  for (let [enName, ptName] of sceneTranslations) { translatedText = translatedText.replace(new RegExp(`\\b${enName}\\b`, 'gi'), ptName); }
-  const vocabKeys = Array.from(miniDict.keys()).sort((a, b) => b.length - a.length);
-  const regex = new RegExp(`\\b(${vocabKeys.join('|').replace(/[?]/g, '\\?')})\\b`, 'gi');
-  return translatedText.replace(regex, (match) => miniDict.get(match.toLowerCase()) || match);
-}
+/* ---------- UTILITÁRIOS ---------- */
 const $ = sel => document.querySelector(sel);
 const chatEl = $('#chat'); const msgInput = $('#msgInput');
 function scrollBottom(){ chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: 'smooth' }); }
@@ -237,21 +227,50 @@ async function ttsSpeak(text, button = null) {
 }
 
 /* ---------- UI: MENSAGENS, MEDALHAS, CENAS, ETC. ---------- */
-function addMsg({from='ai', text, translate=false, speak=true}){
-  const wrap=document.createElement('div'); wrap.className=`relative flex ${from==='ai'?'justify-start':'justify-end'}`;
-  const bubble=document.createElement('div'); bubble.className=`relative max-w-[82%] px-4 py-3 rounded-2xl shadow card ${from==='ai'?'bubble-ai':'bubble-kid'}`; bubble.style.margin='6px 0';
-  const contentDiv=document.createElement('div'); contentDiv.className='text-[15px] leading-relaxed'; contentDiv.textContent=text; bubble.appendChild(contentDiv);
-  if (state.showTranslation && translate && from==='ai') {
-    const t=document.createElement('div'); t.className='text-[12px] text-slate-600 mt-1'; t.textContent=`PT: ${approxTranslateToPT(text)}`; bubble.appendChild(t);
+function addMsg({from='ai', text, translate=true, speak=true}){
+  const wrap=document.createElement('div');
+  wrap.className=`relative flex ${from==='ai'?'justify-start':'justify-end'}`;
+
+  const bubble=document.createElement('div');
+  bubble.className=`relative max-w-[82%] px-4 py-3 rounded-2xl shadow card ${from==='ai'?'bubble-ai':'bubble-kid'}`;
+  bubble.style.margin='6px 0';
+
+  let englishText = text;
+  let portugueseText = null;
+
+  if (from === 'ai' && text.includes('[TRANSLATION]')) {
+    const parts = text.split('[TRANSLATION]');
+    englishText = parts[0].trim();
+    portugueseText = parts[1].trim();
   }
+
+  const contentDiv=document.createElement('div');
+  contentDiv.className='text-[15px] leading-relaxed';
+  contentDiv.textContent = englishText;
+  bubble.appendChild(contentDiv);
+
+  if (state.showTranslation && from === 'ai' && portugueseText) {
+    const t=document.createElement('div');
+    t.className='text-[12px] text-slate-600 mt-1';
+    t.textContent = `PT: ${portugueseText}`;
+    bubble.appendChild(t);
+  }
+
   if (from==='ai'){
-    const controls=document.createElement('div'); controls.style.marginTop='8px';
-    const listenBtn=document.createElement('button'); listenBtn.className='px-3 py-1 rounded-full text-xs bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold';
-    listenBtn.textContent='🔊 Ouvir'; listenBtn.onclick=()=>ttsSpeak(text, listenBtn);
-    controls.appendChild(listenBtn); bubble.appendChild(controls);
-    if(speak) ttsSpeak(text);
+    const controls=document.createElement('div');
+    controls.style.marginTop='8px';
+    const listenBtn=document.createElement('button');
+    listenBtn.className='px-3 py-1 rounded-full text-xs bg-sky-100 hover:bg-sky-200 text-sky-900 font-bold';
+    listenBtn.textContent='🔊 Ouvir';
+    listenBtn.onclick=()=>ttsSpeak(englishText, listenBtn);
+    controls.appendChild(listenBtn);
+    bubble.appendChild(controls);
+    if(speak) ttsSpeak(englishText);
   }
-  wrap.appendChild(bubble); chatEl.appendChild(wrap); scrollBottom();
+
+  wrap.appendChild(bubble);
+  chatEl.appendChild(wrap);
+  scrollBottom();
 }
 function setStars(n){
   state.stars=n; $('#stars').textContent='★'.repeat(n)+'☆'.repeat(5-n); $('#xpText').textContent=`${n}/5`;
@@ -365,6 +384,7 @@ Your roleplay character is "${scene ? scene.nameEn : 'a friendly helper'}" (${sc
 2.  **ADAPT TO AGE:** Your language style MUST be adapted for a ${state.age || 'young'} year-old child. ${getAgeGuidance(state.age)}
 3.  **BE THE CHARACTER:** Stay in character based on the ROLEPLAY CONTEXT. Ask questions related to your role.
 4.  **KEEP IT SHORT:** Respond in 1-3 short sentences. NEVER switch to Portuguese.
+5.  **TRANSLATION:** After your complete English response, ALWAYS add a separator on a new line: [TRANSLATION]. On the next line, provide a full, natural Portuguese translation of your English response.
 End.`.trim();
 }
 async function handleSend(text){
@@ -403,7 +423,7 @@ function setupEventListeners(){
     state.userName=name;state.age=age;localStorage.setItem('ae_name',name);localStorage.setItem('ae_age',age);
     $('#profileName').textContent=name;$('#profileAge').textContent=age;
     $('#startScreen').style.display='none';$('#app').classList.remove('hidden');chatEl.innerHTML='';
-    addMsg({from:'ai',text:`Hello ${name}! Welcome to Adventure English 🎉`,translate:true,speak:true});
+    addMsg({from:'ai',text:`Hello ${name}! Welcome to Adventure English 🎉 [TRANSLATION] Olá ${name}! Bem-vindo(a) ao Adventure English 🎉`,translate:true,speak:true});
   });
   try{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;recognition.onstart=()=>{recognizing=true;$('#micStatus').textContent='Ouvindo...';$('#btnMic').textContent='⏹️';};recognition.onend=()=>{recognizing=false;$('#micStatus').textContent='Microfone pronto';$('#btnMic').textContent='🎤';};recognition.onerror=e=>{$('#micStatus').textContent='Erro no microfone.';console.error('Mic error:',e.error);};recognition.onresult=e=>{const text=e.results[0][0].transcript;msgInput.value=text;handleSend(text);};$('#btnMic').addEventListener('click',()=>{if(!recognition)return;if(!recognizing){recognition.start();}else{recognition.stop();}});}}catch(err){$('#micStatus').textContent='Fala não suportada.';}
 }
@@ -412,7 +432,7 @@ function init(){
   if(savedName&&savedAge){
     state.userName=savedName;state.age=savedAge;$('#profileName').textContent=savedName;$('#profileAge').textContent=savedAge;
     $('#startScreen').style.display='none';$('#app').classList.remove('hidden');
-    addMsg({from:'ai',text:`Welcome back, ${savedName}! Let's continue! 😊`,translate:true,speak:true});
+    addMsg({from:'ai',text:`Welcome back, ${savedName}! Let's continue! 😊 [TRANSLATION] Bem-vindo(a) de volta, ${savedName}! Vamos continuar! 😊`,translate:true,speak:true});
   }else{
     $('#startScreen').style.display='flex';$('#app').classList.add('hidden');
   }
