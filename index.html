@@ -126,11 +126,12 @@
                 <div id="sceneList" class="grid grid-cols-2 gap-3"></div>
              </section>
              <section id="profile-card" class="card rounded-2xl p-4 shadow-lg">
-              <h2 class="font-extrabold mb-3">Seu Perfil</h2>
-              <div class="flex flex-wrap items-center gap-4">
-                <div><label class="text-xs font-semibold">Nome</label><div id="profileName" class="text-lg font-bold">—</div></div>
-                <div><label class="text-xs font-semibold">Idade</label><div id="profileAge" class="text-lg font-bold">—</div></div>
-                <div class="ml-auto"><button id="editProfile" class="px-3 py-2 rounded-xl bg-amber-200 text-amber-900 text-sm">Editar</button></div>
+               <div class="flex items-center justify-between">
+                <div>
+                  <h2 class="font-extrabold">Seu Perfil</h2>
+                  <p id="profileDisplayName" class="text-lg font-bold text-violet-700"></p>
+                </div>
+                <button id="editProfile" class="px-3 py-2 rounded-xl bg-amber-200 text-amber-900 text-sm">Editar</button>
               </div>
             </section>
             <section class="card rounded-2xl p-4 shadow-lg">
@@ -151,9 +152,12 @@
         <div class="card rounded-2xl p-6 shadow-lg mt-6">
             <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-2xl">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
             <div id="catList" class="flex flex-wrap gap-2 mb-4"></div>
-            <div class="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t">
-              <div><h4 class="font-bold mb-2">Vocabulário</h4><div id="vocab" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div></div>
-              <div><h4 class="font-bold mb-2">Missões 🎯</h4><ul id="missions" class="list-disc pl-5 space-y-1 text-sm"></ul></div>
+            <div class="grid md:grid-cols-3 gap-6 mt-6 pt-6 border-t">
+              <div class="md:col-span-2"><h4 class="font-bold mb-2">Vocabulário</h4><div id="vocab" class="grid grid-cols-2 sm:grid-cols-4 gap-3"></div></div>
+              <div class="space-y-6">
+                <div><h4 class="font-bold mb-2">Missões 🎯</h4><ul id="missions" class="list-disc pl-5 space-y-1 text-sm"></ul></div>
+                <div><h4 class="font-bold mb-2">Frases de Exemplo 🗣️</h4><ul id="example-sentences" class="list-disc pl-5 space-y-2 text-sm"></ul></div>
+              </div>
             </div>
         </div>
     </div>
@@ -268,16 +272,16 @@ const scenes = [
 ];
 const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "nova", shop: "shimmer", playground: "shimmer" };
 const categories = [
-    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome'], ['how are you?', 'como você está?'], ['my name is...', 'meu nome é...'], ['see you later', 'até mais tarde'], ['yes', 'sim'], ['no', 'não'], ['good morning', 'bom dia'], ['good afternoon', 'boa tarde'], ['good night', 'boa noite'], ['excuse me', 'com licença'], ["you're welcome", 'de nada'], ['nice to meet you', 'prazer em conhecer'], ['friend', 'amigo(a)'], ['boy', 'menino'], ['girl', 'menina'], ['what is this?', 'o que é isto?'], ['I understand', 'eu entendo'], ["I don't know", 'eu não sei'], ['can you help me?', 'pode me ajudar?'], ['of course', 'claro'], ['maybe', 'talvez'], ['welcome', 'bem-vindo(a)'], ['have a good day', 'tenha um bom dia'], ['take care', 'se cuida'], ['me too', 'eu também'], ['why', 'por quê'], ['because', 'porque'], ['now', 'agora'], ['later', 'mais tarde'], ['today', 'hoje'], ['tomorrow', 'amanhã']] },
-    { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco.','Diga sua idade.'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']]},
-    { id:'colors', icon:'🎨', name:'Cores', englishName: 'Colors', missions:['Fale sua cor favorita.'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja']]},
-    { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']]},
-    { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Diga o que gosta de comer.'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza']]},
-    { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Fale sobre sua mãe ou pai.'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['friend', 'amigo(a)']]},
-    { id:'clothes', icon:'👕', name:'Roupas', englishName: 'Clothes', missions:['Descreva sua roupa.'], vocab:[['shirt', 'camisa'], ['pants', 'calças'], ['shoes', 'sapatos'], ['dress', 'vestido'], ['hat', 'chapéu'], ['jacket', 'jaqueta']]},
-    { id:'body', icon:'🧠', name:'Corpo', englishName: 'Body', missions:['Aponte para sua cabeça.'], vocab:[['head', 'cabeça'], ['hand', 'mão'], ['leg', 'perna'], ['eyes', 'olhos'], ['nose', 'nariz'], ['mouth', 'boca']]},
-    { id:'weather', icon:'⛅', name:'Tempo', englishName: 'Weather', missions:['Descreva o dia de hoje.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento']]},
-    { id:'shapes', icon:'💠', name:'Formatos', englishName: 'Shapes', missions:['Desenhe um círculo no ar.', 'Qual é a sua forma geométrica favorita?'], vocab:[['circle', 'círculo'], ['square', 'quadrado'], ['triangle', 'triângulo'], ['star', 'estrela'], ['heart', 'coração'], ['rectangle', 'retângulo']]},
+    { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome'], ['how are you?', 'como você está?'], ['my name is...', 'meu nome é...'], ['see you later', 'até mais tarde'], ['yes', 'sim'], ['no', 'não'], ['good morning', 'bom dia'], ['good afternoon', 'boa tarde'], ['good night', 'boa noite'], ['excuse me', 'com licença'], ["you're welcome", 'de nada'], ['nice to meet you', 'prazer em conhecer'], ['friend', 'amigo(a)'], ['boy', 'menino'], ['girl', 'menina'], ['what is this?', 'o que é isto?'], ['I understand', 'eu entendo'], ["I don't know", 'eu não sei'], ['can you help me?', 'pode me ajudar?'], ['of course', 'claro'], ['maybe', 'talvez'], ['welcome', 'bem-vindo(a)'], ['have a good day', 'tenha um bom dia'], ['take care', 'se cuida'], ['me too', 'eu também'], ['why', 'por quê'], ['because', 'porque'], ['now', 'agora'], ['later', 'mais tarde'], ['today', 'hoje'], ['tomorrow', 'amanhã']], examples: ['**Hello**, how are you?', '**Thank you** for the gift.','**Sorry**, I am late.'] },
+    { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco.','Diga sua idade.'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']], examples: ['I have **one** dog.', 'She is **six** years old.'] },
+    { id:'colors', icon:'🎨', name:'Cores', englishName: 'Colors', missions:['Fale sua cor favorita.'], vocab:[['red', 'vermelho'], ['blue', 'azul'], ['green', 'verde'], ['yellow', 'amarelo'], ['pink', 'rosa'], ['orange', 'laranja']], examples: ['My favorite color is **blue**.', 'The sun is **yellow**.'] },
+    { id:'animals', icon:'🐾', name:'Animais', englishName: 'Animals', missions:['Qual seu animal favorito?'], vocab:[['cat', 'gato'], ['dog', 'cachorro'], ['bird', 'pássaro'], ['fish', 'peixe'], ['lion', 'leão'], ['monkey', 'macaco']], examples: ['The **cat** is sleeping.', 'I love my **dog**!'] },
+    { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Diga o que gosta de comer.'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza']], examples: ['I want an **apple**, please.', 'Do you like **pizza**?'] },
+    { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Fale sobre sua mãe ou pai.'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['friend', 'amigo(a)']], examples: ['This is my **mother**.', 'My **friend** is funny.'] },
+    { id:'clothes', icon:'👕', name:'Roupas', englishName: 'Clothes', missions:['Descreva sua roupa.'], vocab:[['shirt', 'camisa'], ['pants', 'calças'], ['shoes', 'sapatos'], ['dress', 'vestido'], ['hat', 'chapéu'], ['jacket', 'jaqueta']], examples: ['I like your **shirt**.', 'Where are my **shoes**?'] },
+    { id:'body', icon:'🧠', name:'Corpo', englishName: 'Body', missions:['Aponte para sua cabeça.'], vocab:[['head', 'cabeça'], ['hand', 'mão'], ['leg', 'perna'], ['eyes', 'olhos'], ['nose', 'nariz'], ['mouth', 'boca']], examples: ['My **head** hurts.', 'She has blue **eyes**.'] },
+    { id:'weather', icon:'⛅', name:'Tempo', englishName: 'Weather', missions:['Descreva o dia de hoje.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento']], examples: ['It is **sunny** today.', 'I don\'t like **rainy** days.'] },
+    { id:'shapes', icon:'💠', name:'Formatos', englishName: 'Shapes', missions:['Desenhe um círculo no ar.', 'Qual é a sua forma geométrica favorita?'], vocab:[['circle', 'círculo'], ['square', 'quadrado'], ['triangle', 'triângulo'], ['star', 'estrela'], ['heart', 'coração'], ['rectangle', 'retângulo']], examples: ['The moon is a **circle**.', 'A window is a **square**.'] },
 ];
 const gameVocab = {
     'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵'], ['bear', '🐻'], ['frog', '🐸']],
@@ -420,7 +424,7 @@ function renderScenes(){
       [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
       btn.classList.add('ring-2','ring-violet-400','bg-violet-50');
       $('#currentVoice').textContent=`Voz: ${state.voice}`;
-      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ')[1]}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ')[1]}! Vamos conversar! 😊`,translate:true}); playPop();
+      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ').pop()}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ').pop()}! Vamos conversar! 😊`,translate:true}); playPop();
     });
     box.appendChild(btn);
   });
@@ -433,7 +437,7 @@ function renderCategories(){
     chip.addEventListener('click',()=>{
       state.categoryId=c.id;
       [...box.children].forEach(ch=>ch.classList.remove('ring-2','ring-sky-400','bg-sky-50'));
-      chip.classList.add('ring-2','ring-sky-400','bg-sky-50'); renderVocab(); renderMissions();
+      chip.classList.add('ring-2','ring-sky-400','bg-sky-50'); renderVocab(); renderMissions(); renderExamples();
     });
     box.appendChild(chip);
   });
@@ -453,7 +457,7 @@ function renderVocab() {
     });
     if (c.vocab.length > 6) {
         const btnContainer = document.createElement('div');
-        btnContainer.className = 'sm:col-span-3 col-span-2 flex items-center justify-center';
+        btnContainer.className = 'sm:col-span-4 col-span-2 flex items-center justify-center';
         const toggleBtn = document.createElement('button');
         toggleBtn.className = 'w-full px-4 py-2 rounded-xl font-bold transition';
         if (isExpanded) {
@@ -483,6 +487,21 @@ function renderMissions(){
   const c=categories.find(x=>x.id===state.categoryId),ul=$('#missions'); ul.innerHTML='';
   if(!c){ ul.innerHTML='<li class="text-slate-600">Escolha uma categoria.</li>'; return; }
   c.missions.forEach(m=>{const li=document.createElement('li');li.className='text-slate-700';li.textContent=m.replace('__',state.userName||'...');ul.appendChild(li);});
+}
+function renderExamples() {
+    const c = categories.find(x => x.id === state.categoryId);
+    const ul = $('#example-sentences');
+    ul.innerHTML = '';
+    if (!c || !c.examples) {
+        ul.innerHTML = '<li class="text-slate-600">-</li>';
+        return;
+    }
+    c.examples.forEach(ex => {
+        const li = document.createElement('li');
+        li.className = 'text-slate-700';
+        li.innerHTML = ex.replace(/\*\*(.*?)\*\*/g, '<strong class="font-black text-violet-600">$1</strong>');
+        ul.appendChild(li);
+    });
 }
 
 /* ---------- LÓGICA DO CHAT COM BACKEND ---------- */
@@ -761,7 +780,7 @@ function setupEventListeners(){
     const name=$('#startName').value.trim(),age=$('#startAge').value.trim();
     if(!name||!age){const msg=document.createElement('div');msg.textContent='Por favor, preencha nome e idade.';msg.className='text-red-600 font-bold mt-2 text-sm';const oldMsg=$('#startScreen').querySelector('.text-red-600');if(oldMsg)oldMsg.remove();$('#btnStart').parentElement.insertBefore(msg,$('#btnStart'));return;}
     state.userName=name;state.age=age;localStorage.setItem('ae_name',name);localStorage.setItem('ae_age',age);
-    $('#profileName').textContent=name;$('#profileAge').textContent=age;
+    $('#profileDisplayName').textContent = `${name} (${age} anos)`;
     $('#startScreen').style.display='none';$('#app').classList.remove('hidden');chatEl.innerHTML='';
     addMsg({from:'ai',text:`Hello ${name}! Welcome to Adventure English 🎉 [TRANSLATION] Olá ${name}! Bem-vindo(a) ao Adventure English 🎉`,translate:true,speak:true});
   });
@@ -770,7 +789,8 @@ function setupEventListeners(){
 function init(){
   const savedName=localStorage.getItem('ae_name'),savedAge=localStorage.getItem('ae_age');
   if(savedName&&savedAge){
-    state.userName=savedName;state.age=savedAge;$('#profileName').textContent=savedName;$('#profileAge').textContent=savedAge;
+    state.userName=savedName;state.age=savedAge;
+    $('#profileDisplayName').textContent = `${savedName} (${savedAge} anos)`;
     $('#startScreen').style.display='none';$('#app').classList.remove('hidden');
     addMsg({from:'ai',text:`Welcome back, ${savedName}! Let's continue! 😊 [TRANSLATION] Bem-vindo(a) de volta, ${savedName}! Vamos continuar! 😊`,translate:true,speak:true});
   }else{
