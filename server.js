@@ -10,11 +10,14 @@ const app = express();
 app.use(cors()); // Permite a comunicação com outros domínios
 app.use(express.json()); // Permite que o servidor entenda JSON
 
-// --- NOVIDADE: SERVINDO O FRONTEND ---
-// Esta linha diz ao Express para servir qualquer arquivo da pasta 'public'
-// quando alguém acessar o seu site.
-app.use(express.static('public'));
+// --- CORREÇÃO: SERVINDO O FRONTEND DE FORMA MAIS ROBUSTA ---
+// Esta linha diz ao Express para usar o diretório atual para encontrar arquivos estáticos como o index.html
+app.use(express.static(path.join(__dirname)));
 
+// Rota para a página principal, que envia o index.html
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 // Inicializa o cliente da OpenAI com a chave segura do arquivo .env
 const openai = new OpenAI({
@@ -68,3 +71,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
 });
+
