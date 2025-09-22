@@ -29,6 +29,14 @@
         justify-content: center; padding: 1rem; border-radius: 0.75rem;
     }
     .card-back { transform: rotateY(180deg); background: rgba(255,255,255,0.92); color: #0f172a; font-weight: bold; }
+
+    /* Animação da Medalha */
+    @keyframes medal-in {
+      0% { transform: scale(0.8) translateY(20px); opacity: 0; }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+    #medalModal.visible { opacity: 1; }
+    #medalModal.visible #medalCard { animation: medal-in 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
   </style>
 </head>
 <body>
@@ -81,7 +89,7 @@
     <section class="grid lg:grid-cols-3 gap-6">
       <div class="card rounded-2xl p-4 shadow-lg">
         <h3 class="font-extrabold mb-3">Cenas de Roleplay</h3>
-        <div id="sceneList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <div id="sceneList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
       </div>
       <div class="card rounded-2xl p-4 shadow-lg lg:col-span-2">
         <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
@@ -136,11 +144,22 @@
     </div>
   </div>
 
+  <!-- Medal Unlocked Animation -->
+  <div id="medalModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-[80] transition-opacity duration-300 opacity-0">
+    <div id="medalCard" class="bg-white rounded-3xl p-6 shadow-xl max-w-sm w-full text-center transform scale-90 opacity-0 transition-all duration-300">
+      <div id="medalEmoji" class="text-7xl mb-4 animate-bounce"></div>
+      <h2 class="text-2xl font-extrabold text-amber-500 mb-2">Parabéns!</h2>
+      <p class="text-slate-700 font-bold text-lg mb-1">Você ganhou a medalha:</p>
+      <p id="medalName" class="font-bold text-xl text-violet-600"></p>
+      <p id="medalDesc" class="text-sm text-slate-500 mt-2"></p>
+      <button id="closeMedalModal" class="mt-6 px-5 py-2 bg-slate-200 text-slate-800 font-bold rounded-xl hover:bg-slate-300">Fechar</button>
+    </div>
+  </div>
+
 <script>
 /* =========================
    CONFIGURAÇÃO
    ========================= */
-// Esta configuração funciona tanto localmente quanto online no Render.
 const BACKEND_URL = ''; 
 
 const state = {
@@ -163,6 +182,9 @@ const categories = [
     { id:'food', icon:'🍎', name:'Comida', englishName: 'Food', missions:['Faça um pedido: “I would like __, please.”','Diga o que gosta: “I like __.”','Pergunte: “Do you like __?”'], vocab:[['apple', 'maçã'], ['banana', 'banana'], ['milk', 'leite'], ['water', 'água'], ['bread', 'pão'], ['pizza', 'pizza'], ['cake', 'bolo'], ['juice', 'suco'], ['cheese', 'queijo'], ['egg', 'ovo'], ['rice', 'arroz'], ['ice cream', 'sorvete'], ['strawberry', 'morango'], ['grapes', 'uvas'], ['watermelon', 'melancia'], ['carrot', 'cenoura'], ['tomato', 'tomate'], ['potato', 'batata'], ['lettuce', 'alface'], ['soup', 'sopa'], ['salad', 'salada'], ['sandwich', 'sanduíche'], ['hamburger', 'hambúrguer'], ['fries', 'batatas fritas'], ['pasta', 'macarrão'], ['chicken', 'frango'], ['beef', 'carne'], ['soda', 'refrigerante'], ['tea', 'chá'], ['coffee', 'café'], ['chocolate', 'chocolate'], ['cookie', 'biscoito'], ['candy', 'doce'], ['hungry', 'com fome'], ['thirsty', 'com sede']] },
     { id:'family', icon:'👨‍👩‍👧', name:'Família', englishName: 'Family', missions:['Apresente alguém: “This is my __.”','Pergunte: “Who is he/she?”','Fale de um amigo: “My friend is __.”'], vocab:[['mother', 'mãe'], ['father', 'pai'], ['brother', 'irmão'], ['sister', 'irmã'], ['baby', 'bebê'], ['grandmother', 'avó'], ['grandfather', 'avô'], ['teacher', 'professor(a)'], ['aunt', 'tia'], ['uncle', 'tio'], ['cousin', 'primo(a)'], ['son', 'filho'], ['daughter', 'filha'], ['parents', 'pais'], ['children', 'crianças/filhos'], ['man', 'homem'], ['woman', 'mulher'], ['person', 'pessoa'], ['people', 'pessoas'], ['family', 'família'], ['home', 'lar'], ['house', 'casa'], ['love', 'amor'], ['happy', 'feliz'], ['together', 'juntos'], ['old', 'velho(a)'], ['young', 'jovem'], ['tall', 'alto(a)'], ['short', 'baixo(a)'], ['kind', 'gentil'], ['nice', 'legal'], ['my', 'meu/minha'], ['your', 'seu/sua'], ['he', 'ele'], ['she', 'ela']] },
     { id:'school', icon:'🏫', name:'Escola', englishName: 'School', missions:['Peça algo: “Can I have a pen, please?”','Diga o que tem: “I have a __.”','Pergunte: “Where is my book?”'], vocab:[['teacher', 'professor(a)'], ['book', 'livro'], ['pen', 'caneta'], ['bag', 'mochila'], ['desk', 'carteira'], ['homework', 'lição de casa'], ['student', 'aluno(a)'], ['classroom', 'sala de aula'], ['pencil', 'lápis'], ['eraser', 'borracha'], ['ruler', 'régua'], ['library', 'biblioteca'], ['playground', 'parquinho'], ['computer', 'computador'], ['notebook', 'caderno'], ['scissors', 'tesoura'], ['glue', 'cola'], ['paint', 'tinta'], ['drawing', 'desenho'], ['lesson', 'lição'], ['exam', 'prova'], ['friends', 'amigos'], ['learn', 'aprender'], ['read', 'ler'], ['write', 'escrever'], ['draw', 'desenhar'], ['play', 'brincar'], ['sing', 'cantar'], ['listen', 'ouvir'], ['ask', 'perguntar'], ['answer', 'responder'], ['help', 'ajudar'], ['idea', 'ideia'], ['story', 'história'], ['page', 'página']] },
+    { id:'clothes', icon:'👕', name:'Roupas', englishName: 'Clothes', missions:['Descreva sua roupa: “My shirt is blue.”','Diga o que precisa: “I need a hat.”','Pergunte: “Do you like my shoes?”'], vocab:[['shirt', 'camisa'], ['pants', 'calças'], ['shoes', 'sapatos'], ['dress', 'vestido'], ['hat', 'chapéu'], ['jacket', 'jaqueta'], ['socks', 'meias'], ['skirt', 'saia'], ['sweater', 'suéter'], ['coat', 'casaco'], ['t-shirt', 'camiseta'], ['jeans', 'calça jeans'], ['boots', 'botas'], ['sandals', 'sandálias'], ['gloves', 'luvas'], ['scarf', 'cachecol'], ['cap', 'boné'], ['belt', 'cinto'], ['tie', 'gravata'], ['pajamas', 'pijama'], ['swimsuit', 'fato de banho'], ['uniform', 'uniforme'], ['glasses', 'óculos'], ['watch', 'relógio'], ['ring', 'anel'], ['necklace', 'colar'], ['bracelet', 'pulseira'], ['earrings', 'brincos'], ['pocket', 'bolso'], ['button', 'botão'], ['zipper', 'zíper'], ['fabric', 'tecido'], ['cotton', 'algodão'], ['wool', 'lã'], ['leather', 'couro']] },
+    { id:'body', icon:'🧠', name:'Corpo & Saúde', englishName: 'Body & Health', missions:['Aponte para sua cabeça: “This is my head.”','Diga se algo dói: “My arm hurts.”','Pergunte a um amigo: “Are you okay?”'], vocab:[['head', 'cabeça'], ['hand', 'mão'], ['leg', 'perna'], ['eyes', 'olhos'], ['nose', 'nariz'], ['mouth', 'boca'], ['ear', 'orelha'], ['hair', 'cabelo'], ['arm', 'braço'], ['foot', 'pé'], ['finger', 'dedo da mão'], ['toe', 'dedo do pé'], ['back', 'costas'], ['stomach', 'barriga'], ['chest', 'peito'], ['shoulder', 'ombro'], ['neck', 'pescoço'], ['face', 'rosto'], ['teeth', 'dentes'], ['tongue', 'língua'], ['knee', 'joelho'], ['elbow', 'cotovelo'], ['skin', 'pele'], ['bone', 'osso'], ['heart', 'coração'], ['brain', 'cérebro'], ['muscle', 'músculo'], ['blood', 'sangue'], ['throat', 'garganta'], ['lip', 'lábio'], ['cheek', 'bochecha'], ['chin', 'queixo'], ['eyebrow', 'sobrancelha'], ['nail', 'unha'], ['wrist', 'pulso']] },
+    { id:'weather', icon:'⛅', name:'Tempo & Estações', englishName: 'Weather & Seasons', missions:['Descreva o dia: “It is sunny today.”','Pergunte como está o tempo.','Diga sua estação favorita.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento'], ['cloud', 'nuvem'], ['storm', 'tempestade'], ['fog', 'nevoeiro'], ['ice', 'gelo'], ['temperature', 'temperatura'], ['degree', 'grau'], ['weather forecast', 'previsão do tempo'], ['season', 'estação'], ['spring', 'primavera'], ['summer', 'verão'], ['autumn', 'outono'], ['winter', 'inverno'], ['humid', 'úmido'], ['dry', 'seco'], ['breeze', 'brisa'], ['hurricane', 'furacão'], ['tornado', 'tornado'], ['lightning', 'relâmpago'], ['thunder', 'trovão'], ['rainbow', 'arco-íris'], ['clear sky', 'céu limpo'], ['overcast', 'nublado'], ['drizzle', 'chuvisco'], ['hail', 'granizo'], ['blizzard', 'nevasca'], ['heatwave', 'onda de calor'], ['climate', 'clima'], ['atmosphere', 'atmosfera'], ['humidity', 'umidade']] },
 ];
 
 /* ---------- TRADUÇÃO E UTILITÁRIOS ---------- */
@@ -182,7 +204,9 @@ function scrollBottom(){ chatEl.scrollTo({ top: chatEl.scrollHeight, behavior: '
 
 /* ---------- ÁUDIO E SONS ---------- */
 const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-function playPop(){ try{ const o=audioCtx.createOscillator(),g=audioCtx.createGain(),d=audioCtx.currentTime;o.type='triangle';o.frequency.setValueAtTime(800,d);g.gain.setValueAtTime(.06,d);o.connect(g);g.connect(audioCtx.destination);o.start(d);o.stop(d+.08) }catch(e){} }
+function playSynth({type='sine', freq=600, length=0.08, gain=0.08, glide=false}){ try{ const o=audioCtx.createOscillator(),g=audioCtx.createGain(),d=audioCtx.currentTime; o.type=type; o.frequency.setValueAtTime(freq,d); g.gain.setValueAtTime(gain,d); if(glide){o.frequency.exponentialRampToValueAtTime(freq*1.6,d+length)} o.connect(g);g.connect(audioCtx.destination);o.start(d);o.stop(d+length) }catch(e){} }
+function playPop(){ playSynth({type:'triangle', freq:800, length:0.08, gain:0.06}); }
+function playAchievementSound(){ playSynth({type:'sine', freq:523.25, length:0.1, gain:0.08}); setTimeout(()=>playSynth({type:'sine', freq:659.25, length:0.1, gain:0.08}), 120); setTimeout(()=>playSynth({type:'sine', freq:783.99, length:0.1, gain:0.08}), 240); setTimeout(()=>playSynth({type:'sine', freq:1046.50, length:0.2, gain:0.1, glide:true}), 360); }
 async function ttsSpeak(text, button = null) {
     if (state.currentAudio) { state.currentAudio.pause(); state.currentAudio.onended = null; state.currentAudio.src = ''; state.currentAudio = null; }
     if (audioCtx.state === 'suspended') { await audioCtx.resume().catch(()=>{}); }
@@ -231,11 +255,24 @@ function setStars(n){
   if(n>=5){ state.level++; $('#levelBadge').textContent=`Nível ${state.level}`; giveMedal('five-stars'); setTimeout(()=>setStars(0),400); }
 }
 const medalDefs = [
-  {id:'first-talk', label:'1ª conversa', emoji:'🥇'}, {id:'vocab-star', label:'Palavra do Tema', emoji:'🌟'},
-  {id:'five-stars', label:'5 Estrelas', emoji:'⭐⭐⭐⭐⭐'}, {id:'animal-fan', label:'Amigo dos Animais', emoji:'🐾'},
-  {id:'polite-kid', label:'Criança Educada', emoji:'🙏'}, {id:'curious-mind', label:'Mente Curiosa', emoji:'❓'},
-  {id:'feeling-fine', label:'Expressivo', emoji:'😊'}
+  {id:'first-talk', label:'1ª conversa', emoji:'🥇', descEn: "You sent your first message!", descPt: "Você enviou sua primeira mensagem!"},
+  {id:'vocab-star', label:'Palavra do Tema', emoji:'🌟', descEn: "You used a word from the category!", descPt: "Você usou uma palavra da categoria!"},
+  {id:'five-stars', label:'5 Estrelas', emoji:'⭐⭐⭐⭐⭐', descEn: "You earned 5 stars in a category!", descPt: "Você ganhou 5 estrelas em uma categoria!"},
+  {id:'animal-fan', label:'Amigo dos Animais', emoji:'🐾', descEn: "You talked about animals!", descPt: "Você falou sobre animais!"},
+  {id:'polite-kid', label:'Criança Educada', emoji:'🙏', descEn: "You were very polite!", descPt: "Você foi muito educado(a)!"},
+  {id:'curious-mind', label:'Mente Curiosa', emoji:'❓', descEn: "You asked a question!", descPt: "Você fez uma pergunta!"},
+  {id:'feeling-fine', label:'Expressivo', emoji:'😊', descEn: "You talked about your feelings!", descPt: "Você falou sobre seus sentimentos!"}
 ];
+
+function showMedalAnimation(medal) {
+  const modal = $('#medalModal'), card = $('#medalCard'), emoji = $('#medalEmoji'), name = $('#medalName'), desc = $('#medalDesc');
+  emoji.textContent = medal.emoji; name.textContent = medal.label; desc.textContent = `${medal.descEn} / ${medal.descPt}`;
+  modal.classList.remove('hidden'); modal.classList.add('flex');
+  setTimeout(() => { modal.classList.add('visible'); playAchievementSound(); }, 10);
+  const hide = () => { modal.classList.remove('visible'); setTimeout(() => { modal.classList.add('hidden'); modal.classList.remove('flex'); }, 300); };
+  const hideTimeout = setTimeout(hide, 5000);
+  $('#closeMedalModal').onclick = () => { clearTimeout(hideTimeout); hide(); };
+}
 function renderBadges(){
   const box=$('#badges'); box.innerHTML='';
   medalDefs.forEach(m=>{
@@ -244,7 +281,13 @@ function renderBadges(){
     b.innerHTML=`<span class="mr-1">${m.emoji}</span> <span class="font-bold">${m.label}</span>`; box.appendChild(b);
   });
 }
-function giveMedal(id){ if(state.achievements[id])return; state.achievements[id]=true; renderBadges(); addMsg({from:'ai',text:`Você ganhou a medalha: ${id}! 🏅`,translate:true,speak:false}); }
+function giveMedal(id){
+  if(state.achievements[id])return;
+  state.achievements[id] = true;
+  renderBadges();
+  const medal = medalDefs.find(m => m.id === id);
+  if (medal) { showMedalAnimation(medal); }
+}
 function renderScenes(){
   const box=$('#sceneList'); box.innerHTML='';
   scenes.forEach(s=>{
@@ -323,6 +366,7 @@ async function handleSend(text){
   const lower=text.toLowerCase(),cat=categories.find(c=>c.id===state.categoryId);
   if(cat&&cat.vocab.some(([en])=>lower.includes(en.toLowerCase()))){setStars(Math.min(5,state.stars+1));giveMedal('vocab-star');}
   if(/(please|thank you)/i.test(lower))giveMedal('polite-kid'); if(/\b(what|where|who|how|why|do you)\b/i.test(lower))giveMedal('curious-mind');
+  if (/(happy|sad|love|like|fine|good|great)/i.test(lower)) giveMedal('feeling-fine');
   if(!state.achievements['first-talk'])giveMedal('first-talk');
   try{
     state.history.push({role:'user',content:text});
