@@ -434,23 +434,40 @@ function renderCategories(){
 function renderVocab(){
   const c=categories.find(x=>x.id===state.categoryId),box=$('#vocab'); box.innerHTML='';
   if(!c){ box.innerHTML='<div class="text-sm text-slate-600 col-span-full">Escolha uma categoria.</div>'; return; }
-  const isExpanded=!!state.vocabExpanded[state.categoryId],wordsToDisplay=isExpanded?c.vocab:c.vocab.slice(0,6);
-  wordsToDisplay.forEach(([en,pt])=>{
+  const isExpanded=!!state.vocabExpanded[state.categoryId],wordsToDisplay=isExpanded?c.vocab:c.vocab; // Always get full list
+  
+  box.innerHTML = ''; // Clear previous content
+
+  wordsToDisplay.slice(0, 6).forEach(([en,pt])=>{ createVocabCard(en, pt, box); });
+
+  if (wordsToDisplay.length > 6) {
+    const hiddenContainer = document.createElement('div');
+    hiddenContainer.id = `hidden-vocab-${c.id}`;
+    if (!isExpanded) hiddenContainer.classList.add('hidden');
+    wordsToDisplay.slice(6).forEach(([en,pt])=>{ createVocabCard(en, pt, hiddenContainer); });
+    box.appendChild(hiddenContainer);
+
+    const btnContainer=document.createElement('div'); btnContainer.className='sm:col-span-3 col-span-2 flex items-center justify-center';
+    const toggleBtn=document.createElement('button');
+    toggleBtn.className='w-full px-4 py-2 rounded-xl font-bold transition';
+    if(isExpanded) {
+        toggleBtn.textContent='Mostrar menos...';
+        toggleBtn.classList.add('bg-slate-100', 'text-slate-800', 'hover:bg-slate-200');
+    } else {
+        toggleBtn.textContent=`Mostrar mais (${wordsToDisplay.length-6})...`;
+        toggleBtn.classList.add('bg-sky-100', 'text-sky-800', 'hover:bg-sky-200');
+    }
+    toggleBtn.onclick=()=>{ state.vocabExpanded[c.id]=!isExpanded; playPop(); renderVocab(); };
+    btnContainer.appendChild(toggleBtn);
+    box.appendChild(btnContainer);
+  }
+}
+function createVocabCard(en, pt, container) {
     const card=document.createElement('div'); card.className='vocab-card w-full h-20 relative cursor-pointer'; card.style.perspective='1000px';
     const front=document.createElement('div'); front.className='card-front border border-slate-200 bg-white/80 hover:bg-white text-center'; front.innerHTML=`<div class="font-extrabold text-sm text-slate-800 capitalize">${en}</div>`;
     const back=document.createElement('div'); back.className='card-back border border-slate-200'; back.innerHTML=`<div class="font-bold text-sm text-slate-800 capitalize">${pt}</div>`;
     card.append(front,back); card.addEventListener('click',()=>{ card.classList.toggle('flipped'); ttsSpeak(en,null); if(card.classList.contains('flipped')){setTimeout(()=>card.classList.remove('flipped'),5000)} });
-    box.appendChild(card);
-  });
-  const btnContainer=document.createElement('div'); btnContainer.className='sm:col-span-3 col-span-2 flex items-center justify-center';
-  if(isExpanded){
-    const lessBtn=document.createElement('button'); lessBtn.className='w-full px-4 py-2 rounded-xl bg-slate-100 text-slate-800 font-bold hover:bg-slate-200 transition';
-    lessBtn.textContent='Mostrar menos...'; lessBtn.onclick=()=>{state.vocabExpanded[state.categoryId]=false;playPop();renderVocab();}; btnContainer.appendChild(lessBtn);
-  }else if(c.vocab.length>6){
-    const moreBtn=document.createElement('button'); moreBtn.className='w-full px-4 py-2 rounded-xl bg-sky-100 text-sky-800 font-bold hover:bg-sky-200 transition';
-    moreBtn.textContent=`Mostrar mais (${c.vocab.length-6})...`; moreBtn.onclick=()=>{state.vocabExpanded[state.categoryId]=true;playPop();renderVocab();}; btnContainer.appendChild(moreBtn);
-  }
-  if(btnContainer.hasChildNodes()) box.appendChild(btnContainer);
+    container.appendChild(card);
 }
 function renderMissions(){
   const c=categories.find(x=>x.id===state.categoryId),ul=$('#missions'); ul.innerHTML='';
@@ -745,3 +762,4 @@ init();
 </body>
 </html>
 
+s
