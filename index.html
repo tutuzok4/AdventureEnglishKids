@@ -83,6 +83,7 @@
         <!-- Navegação de Views -->
         <div class="flex items-center gap-2 p-1 bg-slate-200 rounded-xl">
             <button id="viewToggleConversation" class="px-4 py-1.5 text-sm font-bold bg-white text-violet-600 rounded-lg shadow">💬 Conversação</button>
+            <button id="viewToggleVocabulary" class="px-4 py-1.5 text-sm font-bold text-slate-600 rounded-lg">📚 Vocabulário</button>
             <button id="viewToggleGames" class="px-4 py-1.5 text-sm font-bold text-slate-600 rounded-lg">🎮 Jogos</button>
         </div>
         <div class="flex items-center gap-3">
@@ -97,21 +98,6 @@
 
     <!-- VIEW DE CONVERSAÇÃO -->
     <div id="conversationView">
-        <section class="grid lg:grid-cols-3 gap-6 mt-6">
-          <div class="card rounded-2xl p-4 shadow-lg">
-            <h3 class="font-extrabold mb-3">Cenas de Roleplay</h3>
-            <div id="sceneList" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5"></div>
-          </div>
-          <div class="card rounded-2xl p-4 shadow-lg lg:col-span-2">
-            <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
-            <div id="catList" class="flex flex-wrap gap-2 mb-4"></div>
-            <div class="grid md:grid-cols-2 gap-6">
-              <div><h4 class="font-bold mb-2">Vocabulário</h4><div id="vocab" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div></div>
-              <div><h4 class="font-bold mb-2">Missões 🎯</h4><ul id="missions" class="list-disc pl-5 space-y-1 text-sm"></ul></div>
-            </div>
-          </div>
-        </section>
-
         <main class="grid lg:grid-cols-3 gap-6 mt-6">
           <section class="lg:col-span-2 card rounded-2xl p-0 shadow-lg flex flex-col">
             <div class="flex items-center justify-between px-4 pt-4">
@@ -121,7 +107,7 @@
                 <button id="btnReset" class="text-xs px-3 py-2 rounded-lg bg-red-100 text-red-700 hover:bg-red-200">Reiniciar</button>
               </div>
             </div>
-            <div id="chat" class="flex-1 px-4 pb-4 overflow-y-auto nice-scroll space-y-3 min-h-[320px]"></div>
+            <div id="chat" class="flex-1 px-4 pb-4 overflow-y-auto nice-scroll space-y-3 min-h-[400px]"></div>
             <form id="chatForm" class="border-t border-slate-100 p-3 flex items-end gap-2">
               <button type="button" id="btnHint" class="px-3 py-2 rounded-xl bg-amber-200 text-amber-900 font-bold hover:bg-amber-300">Dica 💡</button>
               <div class="flex-1">
@@ -135,6 +121,10 @@
             </form>
           </section>
           <aside class="space-y-6">
+             <section class="card rounded-2xl p-4 shadow-lg">
+                <h3 class="font-extrabold mb-3">Cenas de Roleplay</h3>
+                <div id="sceneList" class="grid grid-cols-2 gap-3"></div>
+             </section>
              <section id="profile-card" class="card rounded-2xl p-4 shadow-lg">
               <h2 class="font-extrabold mb-3">Seu Perfil</h2>
               <div class="flex flex-wrap items-center gap-4">
@@ -146,15 +136,26 @@
             <section class="card rounded-2xl p-4 shadow-lg">
               <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold">Progresso ⭐</h3><div id="levelBadge" class="text-xs font-extrabold text-slate-900 px-2 py-1 rounded-lg">Nível 1</div></div>
               <div class="flex items-center gap-2"><div id="stars" class="flex text-2xl">☆☆☆☆☆</div><span id="xpText" class="text-xs text-slate-600">0/5</span></div>
-              <p class="text-xs text-slate-600 mt-2">Ganhe estrelas usando palavras do tema!</p>
             </section>
-            <section class="card rounded-2xl p-4 shadow-lg">
+             <section class="card rounded-2xl p-4 shadow-lg">
               <h3 class="font-extrabold mb-2">Voz atual 🎤</h3><p id="currentVoice" class="text-sm text-slate-700">Nenhuma</p>
               <div class="mt-3"><label class="text-xs text-slate-600">Escolher voz</label><select id="voiceSelect" class="w-full mt-1 rounded-xl border border-slate-200 px-3 py-2"><option value="">(usar voz da cena)</option><option value="nova">Nova</option><option value="alloy">Alloy</option><option value="shimmer">Shimmer</option><option value="onyx">Onyx</option><option value="fable">Fable</option><option value="echo">Echo</option></select></div>
             </section>
             <section class="card rounded-2xl p-4 shadow-lg"><h3 class="font-extrabold mb-2">Medalhas 🏅</h3><div id="badges" class="flex flex-wrap gap-2"></div></section>
           </aside>
         </main>
+    </div>
+
+    <!-- VIEW DE VOCABULÁRIO -->
+    <div id="vocabularyView" class="hidden">
+        <div class="card rounded-2xl p-6 shadow-lg mt-6">
+            <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-2xl">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
+            <div id="catList" class="flex flex-wrap gap-2 mb-4"></div>
+            <div class="grid md:grid-cols-2 gap-6 mt-6 pt-6 border-t">
+              <div><h4 class="font-bold mb-2">Vocabulário</h4><div id="vocab" class="grid grid-cols-2 sm:grid-cols-3 gap-3"></div></div>
+              <div><h4 class="font-bold mb-2">Missões 🎯</h4><ul id="missions" class="list-disc pl-5 space-y-1 text-sm"></ul></div>
+            </div>
+        </div>
     </div>
 
     <!-- VIEW DE JOGOS -->
@@ -169,8 +170,11 @@
                 <button class="game-button px-4 py-2 text-sm font-bold bg-slate-200 text-slate-700 rounded-xl" data-game="oddOneOut">O Intruso</button>
             </div>
             
-            <div id="gameContainer" class="p-4 bg-slate-100/50 rounded-2xl min-h-[400px]">
+            <div id="gameContainer" class="p-4 bg-slate-100/50 rounded-2xl min-h-[400px] relative">
                 <p id="gameFeedback" class="text-center text-sm h-5 mb-4 font-bold"></p>
+                <div class="absolute top-4 right-4">
+                  <button id="gameHintBtn" class="hidden px-3 py-1 bg-amber-200 text-amber-900 font-bold rounded-full text-xs">💡 Dica</button>
+                </div>
                 <!-- Jogo: Ligar Palavra-Emoji -->
                 <div id="wordEmojiGame" class="game-area hidden">
                     <p class="font-bold text-center mb-4">Ligue a palavra em inglês com o emoji correto!</p>
@@ -273,17 +277,20 @@ const categories = [
     { id:'clothes', icon:'👕', name:'Roupas', englishName: 'Clothes', missions:['Descreva sua roupa.'], vocab:[['shirt', 'camisa'], ['pants', 'calças'], ['shoes', 'sapatos'], ['dress', 'vestido'], ['hat', 'chapéu'], ['jacket', 'jaqueta']]},
     { id:'body', icon:'🧠', name:'Corpo', englishName: 'Body', missions:['Aponte para sua cabeça.'], vocab:[['head', 'cabeça'], ['hand', 'mão'], ['leg', 'perna'], ['eyes', 'olhos'], ['nose', 'nariz'], ['mouth', 'boca']]},
     { id:'weather', icon:'⛅', name:'Tempo', englishName: 'Weather', missions:['Descreva o dia de hoje.'], vocab:[['sunny', 'ensolarado'], ['rainy', 'chuvoso'], ['cold', 'frio'], ['hot', 'quente'], ['snow', 'neve'], ['wind', 'vento']]},
+    { id:'shapes', icon:'💠', name:'Formatos', englishName: 'Shapes', missions:['Desenhe um círculo no ar.', 'Qual é a sua forma geométrica favorita?'], vocab:[['circle', 'círculo'], ['square', 'quadrado'], ['triangle', 'triângulo'], ['star', 'estrela'], ['heart', 'coração'], ['rectangle', 'retângulo']]},
 ];
 const gameVocab = {
-    'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵']],
-    'food': [['apple','🍎'], ['banana','🍌'], ['pizza','🍕'], ['milk','🥛'], ['bread','🍞'], ['cake', '🍰']],
-    'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣']],
+    'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵'], ['bear', '🐻'], ['frog', '🐸']],
+    'food': [['apple','🍎'], ['banana','🍌'], ['pizza','🍕'], ['milk','🥛'], ['bread','🍞'], ['cake', '🍰'], ['grapes', '🍇'], ['cheese', '🧀']],
+    'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣'], ['black', '⚫️'], ['white', '⚪️']],
+    'shapes': [['circle','🔵'], ['square','🟪'], ['triangle','🔺'], ['star','⭐'], ['heart','❤️'], ['rectangle', '▭']],
 };
 const oddOneOutSets = [
     { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one_emoji: '🐶', answer: 'dog' },
     { emojis: ['🚗', '🚲', '🚀', '⭐'], odd_one_emoji: '⭐', answer: 'star' },
     { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one_emoji: '👑', answer: 'crown' },
     { emojis: ['👕', '👖', '☀️', '👗'], odd_one_emoji: '☀️', answer: 'sun' },
+    { emojis: ['🔵', '🟪', '🔺', '🐱'], odd_one_emoji: '🐱', answer: 'cat' },
 ];
 
 
@@ -411,7 +418,8 @@ function renderScenes(){
     btn.addEventListener('click',()=>{
       state.sceneId=s.id; state.voice=sceneVoices[s.id]||'alloy'; $('#activeSceneName').textContent=s.name;
       [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
-      btn.classList.add('ring-2','ring-violet-400','bg-violet-50'); $('#currentVoice').textContent=`Voz: ${state.voice}`;
+      btn.classList.add('ring-2','ring-violet-400','bg-violet-50');
+      $('#currentVoice').textContent=`Voz: ${state.voice}`;
       addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ')[1]}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ')[1]}! Vamos conversar! 😊`,translate:true}); playPop();
     });
     box.appendChild(btn);
@@ -426,7 +434,6 @@ function renderCategories(){
       state.categoryId=c.id;
       [...box.children].forEach(ch=>ch.classList.remove('ring-2','ring-sky-400','bg-sky-50'));
       chip.classList.add('ring-2','ring-sky-400','bg-sky-50'); renderVocab(); renderMissions();
-      addMsg({from:'ai',text:`Great choice: ${c.englishName}! Try to use one of these words. 🌟 [TRANSLATION] Ótima escolha: ${c.name}! Tente usar uma dessas palavras. 🌟`,translate:true}); playPop();
     });
     box.appendChild(chip);
   });
@@ -526,6 +533,10 @@ function showGame(gameId) {
     $('#gameWinMessage').classList.add('hidden');
     $('#gameFeedback').textContent = '';
     state.currentGame.id = gameId;
+
+    const writingGames = ['missing', 'oddOneOut', 'scramble'];
+    $('#gameHintBtn').style.display = 'none'; // Hide by default
+
     switch (gameId) {
         case 'wordEmoji': startWordEmojiGame(); break;
         case 'memory': startMemoryGame(); break;
@@ -687,11 +698,13 @@ function startScrambleGame() {
 function startMissingGame() {
     const container = $('#missingEmojisContainer'), instruction = $('#missingGameInstruction'), feedback = $('#gameFeedback'), answerContainer = $('#missingAnswer'), lettersContainer = $('#missingLetters');
     container.innerHTML = ''; instruction.textContent = 'Memorize os emojis...'; feedback.textContent = ''; answerContainer.textContent = ''; lettersContainer.innerHTML = '';
+    const hintBtn = $('#gameHintBtn'); hintBtn.onclick = null; hintBtn.style.display = 'none';
     if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
     const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
     const items = shuffle([...gameVocab[randomCategoryKey]]).slice(0, 4);
     const missingItem = items[0];
     items.forEach(item => container.innerHTML += `<div class="text-5xl">${item[1]}</div>`);
+    hintBtn.onclick = () => { feedback.textContent = `Dica: A palavra tem ${missingItem[0].length} letras.`; hintBtn.style.display = 'none'; };
     setTimeout(() => {
         container.innerHTML = '<div class="text-2xl font-bold">Qual desapareceu?</div>';
         setTimeout(() => {
@@ -699,6 +712,7 @@ function startMissingGame() {
             const displayItems = items.filter(item => item[0] !== missingItem[0]);
             displayItems.forEach(item => container.innerHTML += `<div class="text-5xl opacity-50">${item[1]}</div>`);
             instruction.textContent = 'Escreva o nome do emoji que está em falta!';
+            hintBtn.style.display = 'block';
             createLetterKeyboard(missingItem[0], answerContainer, lettersContainer, () => {
                 playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
                 $('#gameWinMessage').classList.remove('hidden');
@@ -710,9 +724,12 @@ function startMissingGame() {
 function startOddOneOutGame() {
     const container = $('#oddOneOutEmojis'), answerContainer = $('#oddOneOutAnswer'), lettersContainer = $('#oddOneOutLetters'), feedback = $('#gameFeedback');
     container.innerHTML = ''; answerContainer.textContent = ''; lettersContainer.innerHTML = ''; feedback.textContent = '';
+    const hintBtn = $('#gameHintBtn'); hintBtn.onclick = null; hintBtn.style.display = 'none';
     if(lettersContainer.nextElementSibling?.tagName === 'BUTTON') lettersContainer.nextElementSibling.remove();
     const currentSet = shuffle([...oddOneOutSets])[0];
     shuffle(currentSet.emojis).forEach(emoji => container.innerHTML += `<div class="text-5xl">${emoji}</div>`);
+    hintBtn.style.display = 'block';
+    hintBtn.onclick = () => { feedback.textContent = `Dica: A palavra tem ${currentSet.answer.length} letras.`; hintBtn.style.display = 'none'; };
     createLetterKeyboard(currentSet.answer, answerContainer, lettersContainer, () => {
         playCorrect(); feedback.textContent = 'Correto!'; feedback.className = 'text-center text-sm h-5 mb-4 font-bold text-emerald-600';
         $('#gameWinMessage').classList.remove('hidden');
@@ -724,8 +741,9 @@ function startOddOneOutGame() {
 /* ---------- EVENTOS E INICIALIZAÇÃO ---------- */
 function setupEventListeners(){
   setupGameNav();
-  $('#viewToggleConversation').addEventListener('click', () => { $('#conversationView').style.display = 'block'; $('#gamesView').style.display = 'none'; $('#viewToggleConversation').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleGames').classList.remove('bg-white', 'text-violet-600', 'shadow'); });
-  $('#viewToggleGames').addEventListener('click', () => { $('#conversationView').style.display = 'none'; $('#gamesView').style.display = 'block'; $('#viewToggleGames').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleConversation').classList.remove('bg-white', 'text-violet-600', 'shadow'); showGame('wordEmoji'); });
+  $('#viewToggleConversation').addEventListener('click', () => { $('#conversationView').style.display = 'block'; $('#gamesView').style.display = 'none';  $('#vocabularyView').style.display = 'none'; $('#viewToggleConversation').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleGames').classList.remove('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleVocabulary').classList.remove('bg-white', 'text-violet-600', 'shadow'); });
+  $('#viewToggleVocabulary').addEventListener('click', () => { $('#conversationView').style.display = 'none'; $('#gamesView').style.display = 'none'; $('#vocabularyView').style.display = 'block'; $('#viewToggleVocabulary').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleConversation').classList.remove('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleGames').classList.remove('bg-white', 'text-violet-600', 'shadow'); });
+  $('#viewToggleGames').addEventListener('click', () => { $('#conversationView').style.display = 'none'; $('#gamesView').style.display = 'block'; $('#vocabularyView').style.display = 'none'; $('#viewToggleGames').classList.add('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleConversation').classList.remove('bg-white', 'text-violet-600', 'shadow'); $('#viewToggleVocabulary').classList.remove('bg-white', 'text-violet-600', 'shadow'); showGame('wordEmoji'); });
   $('#playAgainBtn').addEventListener('click', () => showGame(state.currentGame.id));
   $('#btnHint').addEventListener('click',()=>{const c=categories.find(x=>x.id===state.categoryId);let hint=c&&c.missions.length?c.missions[Math.floor(Math.random()*c.missions.length)]:'Try a short sentence in English. 😀';addMsg({from:'ai',text:hint.replace('__',state.userName||'...'),translate:true});});
   $('#btnClear').addEventListener('click',()=>{chatEl.innerHTML='';state.history=[];addMsg({from:'ai',text:'New beginning! Choose a scene to continue. ✨',translate:true,speak:true});});
@@ -747,7 +765,7 @@ function setupEventListeners(){
     $('#startScreen').style.display='none';$('#app').classList.remove('hidden');chatEl.innerHTML='';
     addMsg({from:'ai',text:`Hello ${name}! Welcome to Adventure English 🎉 [TRANSLATION] Olá ${name}! Bem-vindo(a) ao Adventure English 🎉`,translate:true,speak:true});
   });
-  try{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;recognition.onstart=()=>{recognizing=true;$('#micStatus').textContent='Ouvindo...';$('#btnMic').textContent='⏹️';};recognition.onend=()=>{recognizing=false;$('#micStatus').textContent='Microfone pronto';$('#btnMic').textContent='🎤';};recognition.onerror=e=>{$('#micStatus').textContent='Erro no microfone.';console.error('Mic error:',e.error);};recognition.onresult=e=>{const text=e.results[0][0].transcript;msgInput.value=text;handleSend(text);};$('#btnMic').addEventListener('click',()=>{if(!recognition)return;if(!recognizing){recognition.start();}else{recognition.stop();}});}}catch(err){$('#micStatus').textContent='Fala não suportada.';}
+  try{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(SR){recognition=new SR();recognition.lang='en-US';recognition.continuous=false;recognition.interimResults=false;recognition.onstart=()=>{recognizing=true;$('#micStatus').textContent='Gravando...';$('#btnMic').textContent='⏹️';};recognition.onend=()=>{recognizing=false;$('#micStatus').textContent='Microfone pronto';$('#btnMic').textContent='🎤';};recognition.onerror=e=>{$('#micStatus').textContent='Erro no microfone.';console.error('Mic error:',e.error);};recognition.onresult=e=>{const text=e.results[0][0].transcript;msgInput.value=text;};$('#btnMic').addEventListener('click',()=>{if(!recognition)return;if(!recognizing){recognition.start();}else{recognition.stop();}});}}catch(err){$('#micStatus').textContent='Fala não suportada.';}
 }
 function init(){
   const savedName=localStorage.getItem('ae_name'),savedAge=localStorage.getItem('ae_age');
