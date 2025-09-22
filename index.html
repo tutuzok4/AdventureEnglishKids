@@ -176,9 +176,7 @@
             
             <div id="gameContainer" class="p-4 bg-slate-100/50 rounded-2xl min-h-[400px] relative">
                 <p id="gameFeedback" class="text-center text-sm h-5 mb-4 font-bold"></p>
-                <div class="absolute top-4 right-4">
-                  <button id="gameHintBtn" class="hidden px-3 py-1 bg-amber-200 text-amber-900 font-bold rounded-full text-xs">💡 Dica</button>
-                </div>
+                
                 <!-- Jogo: Ligar Palavra-Emoji -->
                 <div id="wordEmojiGame" class="game-area hidden">
                     <p class="font-bold text-center mb-4">Ligue a palavra em inglês com o emoji correto!</p>
@@ -208,6 +206,7 @@
                     <div class="flex flex-col items-center justify-center">
                         <div id="missingEmojisContainer" class="flex justify-center items-center gap-4 h-32"></div>
                          <div id="missingAnswer" class="h-12 w-64 bg-white rounded-lg border-2 border-slate-300 flex items-center justify-center text-2xl font-bold tracking-widest my-4"></div>
+                        <div id="gameHintContainer" class="h-10 mb-2"></div>
                         <div id="missingLetters" class="flex flex-wrap justify-center gap-2 mb-4"></div>
                     </div>
                 </div>
@@ -270,7 +269,7 @@ const scenes = [
   { id:'shop', name:'Vendedora Chloe', nameEn:'Seller Chloe', icon:'🛍️', style:'prestativa, alegre', persona: 'Your name is Chloe, a cheerful teenager working at a clothing store. Help the child pick out clothes, compliment their choices, and ask about their favorite colors.'},
   { id:'playground', name:'Amiga Lily', nameEn:'Playground Friend Lily', icon:'🛝', style:'brincalhona, animada', persona: 'Your name is Lily. You are the same age as the child you are talking to. Be very playful and energetic. Invite them to play on the swings, slides, and talk about your favorite games.'},
 ];
-const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "nova", shop: "shimmer", playground: "shimmer" };
+const sceneVoices = { teacher: "nova", zoo: "alloy", restaurant: "shimmer", doctor: "nova", shop: "shimmer", playground: "nova" };
 const categories = [
     { id:'greetings', icon:'👋', name:'Saudações', englishName: 'Greetings', missions:['Apresente-se: “Hello! My name is __.”','Pergunte o nome: “What is your name?”'], vocab:[['hello', 'olá'], ['goodbye', 'tchau'], ['please', 'por favor'], ['thank you', 'obrigado(a)'], ['sorry', 'desculpa'], ['name', 'nome'], ['how are you?', 'como você está?'], ['my name is...', 'meu nome é...'], ['see you later', 'até mais tarde'], ['yes', 'sim'], ['no', 'não'], ['good morning', 'bom dia'], ['good afternoon', 'boa tarde'], ['good night', 'boa noite'], ['excuse me', 'com licença'], ["you're welcome", 'de nada'], ['nice to meet you', 'prazer em conhecer'], ['friend', 'amigo(a)'], ['boy', 'menino'], ['girl', 'menina'], ['what is this?', 'o que é isto?'], ['I understand', 'eu entendo'], ["I don't know", 'eu não sei'], ['can you help me?', 'pode me ajudar?'], ['of course', 'claro'], ['maybe', 'talvez'], ['welcome', 'bem-vindo(a)'], ['have a good day', 'tenha um bom dia'], ['take care', 'se cuida'], ['me too', 'eu também'], ['why', 'por quê'], ['because', 'porque'], ['now', 'agora'], ['later', 'mais tarde'], ['today', 'hoje'], ['tomorrow', 'amanhã']], examples: ['**Hello**, how are you?', '**Thank you** for the gift.','**Sorry**, I am late.'] },
     { id:'numbers', icon:'🔢', name:'Números', englishName: 'Numbers', missions:['Conte até cinco.','Diga sua idade.'], vocab:[['one', 'um'], ['two', 'dois'], ['three', 'três'], ['four', 'quatro'], ['five', 'cinco'], ['six', 'seis']], examples: ['I have **one** dog.', 'She is **six** years old.'] },
@@ -424,7 +423,7 @@ function renderScenes(){
       [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
       btn.classList.add('ring-2','ring-violet-400','bg-violet-50');
       $('#currentVoice').textContent=`Voz: ${state.voice}`;
-      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ').pop()}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ').pop()}! Vamos conversar! 😊`,translate:true}); playPop();
+      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ')[1]}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ')[1]}! Vamos conversar! 😊`,translate:true}); playPop();
     });
     box.appendChild(btn);
   });
