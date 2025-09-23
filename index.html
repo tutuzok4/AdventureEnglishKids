@@ -423,7 +423,7 @@ function renderScenes(){
       [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
       btn.classList.add('ring-2','ring-violet-400','bg-violet-50');
       $('#currentVoice').textContent=`Voz: ${state.voice}`;
-      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ')[1]}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ')[1]}! Vamos conversar! 😊`,translate:true}); playPop();
+      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ').pop()}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ').pop()}! Vamos conversar! 😊`,translate:true}); playPop();
     });
     box.appendChild(btn);
   });
@@ -449,31 +449,9 @@ function renderVocab() {
         box.innerHTML = '<div class="text-sm text-slate-600 col-span-full">Escolha uma categoria.</div>';
         return;
     }
-    const isExpanded = !!state.vocabExpanded[c.id];
-    const wordsToDisplay = isExpanded ? c.vocab : c.vocab.slice(0, 6);
-    wordsToDisplay.forEach(([en, pt]) => {
+    c.vocab.forEach(([en, pt]) => {
         createVocabCard(en, pt, box);
     });
-    if (c.vocab.length > 6) {
-        const btnContainer = document.createElement('div');
-        btnContainer.className = 'sm:col-span-4 col-span-2 flex items-center justify-center';
-        const toggleBtn = document.createElement('button');
-        toggleBtn.className = 'w-full px-4 py-2 rounded-xl font-bold transition';
-        if (isExpanded) {
-            toggleBtn.textContent = 'Mostrar menos...';
-            toggleBtn.classList.add('bg-slate-100', 'text-slate-800', 'hover:bg-slate-200');
-        } else {
-            toggleBtn.textContent = `Mostrar mais (${c.vocab.length - 6})...`;
-            toggleBtn.classList.add('bg-sky-100', 'text-sky-800', 'hover:bg-sky-200');
-        }
-        toggleBtn.onclick = () => {
-            state.vocabExpanded[c.id] = !isExpanded;
-            playPop();
-            renderVocab();
-        };
-        btnContainer.appendChild(toggleBtn);
-        box.appendChild(btnContainer);
-    }
 }
 function createVocabCard(en, pt, container) {
     const card=document.createElement('div'); card.className='vocab-card w-full h-20 relative cursor-pointer'; card.style.perspective='1000px';
