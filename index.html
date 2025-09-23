@@ -283,10 +283,13 @@ const categories = [
     { id:'shapes', icon:'💠', name:'Formatos', englishName: 'Shapes', missions:['Desenhe um círculo no ar.', 'Qual é a sua forma geométrica favorita?'], vocab:[['circle', 'círculo'], ['square', 'quadrado'], ['triangle', 'triângulo'], ['star', 'estrela'], ['heart', 'coração'], ['rectangle', 'retângulo'], ['oval', 'oval'], ['diamond', 'losango'], ['shape', 'forma'], ['line', 'linha'], ['dot', 'ponto'], ['side', 'lado'], ['corner', 'canto'], ['big', 'grande'], ['small', 'pequeno'], ['long', 'longo'], ['short', 'curto'], ['round', 'redondo'], ['straight', 'reto']], examples: ['The moon is a **circle**.', 'A window is a **square**.'] },
 ];
 const gameVocab = {
-    'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵'], ['bear', '🐻'], ['frog', '🐸']],
-    'food': [['apple','🍎'], ['banana','🍌'], ['pizza','🍕'], ['milk','🥛'], ['bread','🍞'], ['cake', '🍰'], ['grapes', '🍇'], ['cheese', '🧀']],
-    'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣'], ['black', '⚫️'], ['white', '⚪️']],
+    'animals': [['cat','🐱'], ['dog','🐶'], ['bird','🐦'], ['fish','🐠'], ['lion','🦁'], ['monkey','🐵'], ['bear', '🐻'], ['frog', '🐸'], ['tiger', '🐯'], ['rabbit', '🐰'], ['pig', '🐷'], ['cow', '🐮']],
+    'food': [['apple','🍎'], ['banana','🍌'], ['pizza','🍕'], ['milk','🥛'], ['bread','🍞'], ['cake', '🍰'], ['grapes', '🍇'], ['cheese', '🧀'], ['egg', '🥚'], ['carrot', '🥕'], ['strawberry', '🍓'], ['ice cream', '🍦']],
+    'colors': [['red','🔴'], ['blue','🔵'], ['green','🟢'], ['yellow','🟡'], ['orange','🟠'], ['purple','🟣'], ['black', '⚫️'], ['white', '⚪️'], ['pink', '🌸'], ['brown', '🟫'], ['gray', '🐘']],
     'shapes': [['circle','🔵'], ['square','🟪'], ['triangle','🔺'], ['star','⭐'], ['heart','❤️'], ['rectangle', '▭']],
+    'clothes': [['shirt', '👕'], ['pants', '👖'], ['dress', '👗'], ['hat', '👒'], ['shoes', '👟'], ['socks', '🧦']],
+    'body': [['head', '🧠'], ['hand', '🖐️'], ['eyes', '👀'], ['nose', '👃'], ['mouth', '👄'], ['leg', '🦵']],
+    'weather': [['sunny', '☀️'], ['rainy', '🌧️'], ['cold', '🥶'], ['hot', '🥵'], ['snow', '❄️'], ['wind', '🌬️']]
 };
 const oddOneOutSets = [
     { emojis: ['🍎', '🍌', '🐶', '🍊'], odd_one_emoji: '🐶', answer: 'dog' },
@@ -294,6 +297,9 @@ const oddOneOutSets = [
     { emojis: ['⚽', '🏀', '🏈', '👑'], odd_one_emoji: '👑', answer: 'crown' },
     { emojis: ['👕', '👖', '☀️', '👗'], odd_one_emoji: '☀️', answer: 'sun' },
     { emojis: ['🔵', '🟪', '🔺', '🐱'], odd_one_emoji: '🐱', answer: 'cat' },
+    { emojis: ['🖐️', '👀', '👃', '🧢'], odd_one_emoji: '🧢', answer: 'cap' },
+    { emojis: ['🥶', '🥵', '❄️', '🍕'], odd_one_emoji: '🍕', answer: 'pizza' },
+    { emojis: ['1️⃣', '2️⃣', '🅰️', '3️⃣'], odd_one_emoji: '🅰️', answer: 'a' }
 ];
 
 
@@ -497,7 +503,7 @@ function buildSystemPrompt() {
 **CHARACTER PERSONA: ${persona_instruction}**
 **CORE INSTRUCTIONS:**
 1.  **NEVER BREAK CHARACTER:** You are NOT an AI. You are the character described in your PERSONA. If the child asks your name, age, or personal questions, answer using your character's details. Fully embody the role.
-2.  **GRAMMAR CORRECTION:** Your most important task is to help the child learn. If the child makes a CLEAR grammatical mistake (like "he go" instead of "he goes"), you MUST gently correct it. If the child's sentence is correct, DO NOT rephrase it. Just praise them and continue the conversation naturally.
+2.  **GRAMMAR CORRECTION:** Your most important task is to help the child learn. If the child makes a CLEAR grammatical mistake (like "I drawed" instead of "I drew"), you MUST gently correct it and add a very short, simple explanation in parentheses. Example: "That's great! Remember, we say **'I drew a butterfly'** (because 'drew' is the past of 'draw'). Butterflies are so pretty!" If the child's sentence is correct, DO NOT rephrase it. Just praise them and continue the conversation naturally.
 3.  **ADAPT TO AGE:** Your language style MUST be adapted for a ${state.age || 'young'} year-old child. ${getAgeGuidance(state.age)}
 4.  **STAY ON TOPIC:** Keep the conversation related to your character's context.
 5.  **KEEP IT SHORT:** Respond in 1-3 short sentences. NEVER switch to Portuguese.
@@ -594,7 +600,7 @@ function checkWordEmojiMatch() {
 function startMemoryGame() {
     const board = $('#memoryGameBoard'); board.innerHTML = ''; state.currentGame.flippedCards = []; state.currentGame.lockBoard = false;
     const categoryKeys = Object.keys(gameVocab), randomCategoryKey = categoryKeys[Math.floor(Math.random() * categoryKeys.length)];
-    const pairs = gameVocab[randomCategoryKey];
+    const pairs = shuffle([...gameVocab[randomCategoryKey]]).slice(0, 8); // Pega 8 pares aleatórios
     let cards = [];
     pairs.forEach(pair => {
         cards.push({ type: 'word', value: pair[0], pairId: pair[0] });
@@ -603,7 +609,7 @@ function startMemoryGame() {
     shuffle(cards);
     cards.forEach(cardData => {
         const cardEl = document.createElement('div'); cardEl.className = 'memory-card w-24 h-24 relative'; cardEl.dataset.pairId = cardData.pairId;
-        cardEl.innerHTML = `<div class="front w-full h-full bg-violet-500 rounded-lg"></div><div class="back w-full h-full bg-white rounded-lg text-2xl font-bold border-2">${cardData.value}</div>`;
+        cardEl.innerHTML = `<div class="front w-full h-full bg-violet-500 rounded-lg"></div><div class="back w-full h-full bg-white rounded-lg text-2xl font-bold border-2 flex items-center justify-center p-1">${cardData.value}</div>`;
         cardEl.addEventListener('click', () => {
             if (state.currentGame.lockBoard || cardEl.classList.contains('flipped') || state.currentGame.flippedCards.length >= 2) return;
             cardEl.classList.add('flipped'); state.currentGame.flippedCards.push(cardEl);
@@ -883,3 +889,4 @@ init();
 </script>
 </body>
 </html>
+
