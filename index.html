@@ -531,7 +531,12 @@ function showGame(gameId) {
     state.currentGame.id = gameId;
 
     const writingGames = ['missing', 'oddOneOut', 'scramble'];
-    $('#gameHintBtn').style.display = 'none'; // Hide by default
+    const hintBtn = $('#gameHintBtn');
+    if (writingGames.includes(gameId)) {
+        if(hintBtn) hintBtn.style.display = 'block';
+    } else {
+        if(hintBtn) hintBtn.style.display = 'none';
+    }
 
     switch (gameId) {
         case 'wordEmoji': startWordEmojiGame(); break;
