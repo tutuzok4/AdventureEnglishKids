@@ -52,6 +52,7 @@
 </head>
 <body>
 
+  <!-- START / ONBOARD -->
   <div id="startScreen">
     <div class="z-10 text-center px-6">
       <h1 class="text-4xl md:text-5xl font-extrabold text-white drop-shadow-lg mb-2">Adventure English 🎈</h1>
@@ -68,6 +69,7 @@
     <div class="balloon" style="left:28%; background:linear-gradient(180deg,#fff,#60a5fa); animation-delay:1.5s; transform:scale(1.1);"></div>
   </div>
 
+  <!-- APP (hidden until onboarding) -->
   <div id="app" class="hidden max-w-7xl mx-auto p-6 space-y-6">
     <header class="flex items-center justify-between">
       <div class="flex items-center gap-4">
@@ -78,6 +80,7 @@
         </div>
       </div>
       <div class="flex items-center gap-6">
+        <!-- Navegação de Views -->
         <div class="flex items-center gap-2 p-1 bg-slate-200 rounded-xl">
             <button id="viewToggleConversation" class="px-4 py-1.5 text-sm font-bold bg-white text-violet-600 rounded-lg shadow">💬 Conversação</button>
             <button id="viewToggleVocabulary" class="px-4 py-1.5 text-sm font-bold text-slate-600 rounded-lg">📚 Vocabulário</button>
@@ -93,6 +96,7 @@
       </div>
     </header>
 
+    <!-- VIEW DE CONVERSAÇÃO -->
     <div id="conversationView">
         <main class="grid lg:grid-cols-3 gap-6 mt-6">
           <section class="lg:col-span-2 card rounded-2xl p-0 shadow-lg flex flex-col">
@@ -143,6 +147,7 @@
         </main>
     </div>
 
+    <!-- VIEW DE VOCABULÁRIO -->
     <div id="vocabularyView" class="hidden">
         <div class="card rounded-2xl p-6 shadow-lg mt-6">
             <div class="flex items-center justify-between mb-3"><h3 class="font-extrabold text-2xl">Categorias essenciais</h3><div class="text-xs text-slate-600">Selecione uma para ver vocabulário</div></div>
@@ -157,6 +162,7 @@
         </div>
     </div>
 
+    <!-- VIEW DE JOGOS -->
     <div id="gamesView" class="hidden">
         <div class="card rounded-2xl p-6 shadow-lg mt-6">
             <h2 class="text-2xl font-extrabold mb-4">Central de Jogos 🎮</h2>
@@ -171,6 +177,7 @@
             <div id="gameContainer" class="p-4 bg-slate-100/50 rounded-2xl min-h-[400px] relative">
                 <p id="gameFeedback" class="text-center text-sm h-5 mb-4 font-bold"></p>
                 
+                <!-- Jogo: Ligar Palavra-Emoji -->
                 <div id="wordEmojiGame" class="game-area hidden">
                     <p class="font-bold text-center mb-4">Ligue a palavra em inglês com o emoji correto!</p>
                     <div class="grid grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -178,10 +185,12 @@
                         <div id="gameEmojisContainer" class="grid grid-cols-3 gap-3"></div>
                     </div>
                 </div>
+                <!-- Jogo da Memória -->
                 <div id="memoryGame" class="game-area hidden">
                      <p class="font-bold text-center mb-4">Encontre os pares de palavras e emojis!</p>
                     <div id="memoryGameBoard" class="grid grid-cols-4 gap-4 max-w-md mx-auto"></div>
                 </div>
+                <!-- Letras Baralhadas -->
                 <div id="scrambleGame" class="game-area hidden">
                     <p class="font-bold text-center mb-4">Coloque as letras na ordem correta para formar a palavra!</p>
                     <div class="flex flex-col items-center justify-center">
@@ -191,6 +200,7 @@
                         <button id="scrambleClearBtn" class="text-xs text-slate-500 hover:underline">Limpar</button>
                     </div>
                 </div>
+                <!-- O que Falta? -->
                 <div id="missingGame" class="game-area hidden">
                     <p id="missingGameInstruction" class="font-bold text-center mb-4">Memorize os emojis... e descubra qual está em falta!</p>
                     <div class="flex flex-col items-center justify-center">
@@ -200,6 +210,7 @@
                         <div id="missingLetters" class="flex flex-wrap justify-center gap-2 mb-4"></div>
                     </div>
                 </div>
+                <!-- O Intruso -->
                 <div id="oddOneOutGame" class="game-area hidden">
                     <p class="font-bold text-center mb-4">Qual destes não pertence ao grupo? Escreva o nome em inglês!</p>
                      <div class="flex flex-col items-center justify-center">
@@ -225,6 +236,7 @@
     </div>
   </div>
 
+  <!-- Medal Unlocked Animation -->
   <div id="medalModal" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center p-4 z-[80] transition-opacity duration-300 opacity-0">
     <div id="medalCard" class="bg-white rounded-3xl p-6 shadow-xl max-w-sm w-full text-center transform scale-90 opacity-0 transition-all duration-300">
       <div id="medalEmoji" class="text-7xl mb-4 animate-bounce"></div>
@@ -411,7 +423,7 @@ function renderScenes(){
       [...box.children].forEach(c=>c.classList.remove('ring-2','ring-violet-400','bg-violet-50'));
       btn.classList.add('ring-2','ring-violet-400','bg-violet-50');
       $('#currentVoice').textContent=`Voz: ${state.voice}`;
-      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ')[1]}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ')[1]}! Vamos conversar! 😊`,translate:true}); playPop();
+      addMsg({from:'ai',text:`Hello! My name is ${s.nameEn.split(' ').pop()}! Let's talk! 😊 [TRANSLATION] Olá! O meu nome é ${s.name.split(' ').pop()}! Vamos conversar! 😊`,translate:true}); playPop();
     });
     box.appendChild(btn);
   });
@@ -792,3 +804,4 @@ init();
 </script>
 </body>
 </html>
+
